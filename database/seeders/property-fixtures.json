@@ -1,0 +1,699 @@
+{
+  "version": 1,
+  "contentRevision": 4,
+  "company": {
+    "name": "LinyJaya Development",
+    "tagline": "Wujudkan Rumah Impian & Investasi Terbaik Keluarga Anda.",
+    "email": "sales@linyjaya.com",
+    "phone": "0812-3456-7890",
+    "whatsapp": "6281234567890",
+    "address": "Sales Gallery LinyJaya, Jl. Raya Utama Residence No. 88, Bandung, Jawa Barat",
+    "hours": "Setiap Hari 08.30 – 18.00 WIB (Termasuk Hari Libur)",
+    "vision": "Menghadirkan lingkungan hunian berkualitas tinggi, bernilai investasi optimal, dan mempermudah kepemilikan rumah melalui skema pembayaran yang fleksibel.",
+    "mission": "Merancang hunian modern tropis fungsional, memberikan kemudahan 3 cara bayar (Cash Keras, Cash Bertahap 0%, dan KPR Bank Rekanan), serta mendampingi setiap calon pemilik rumah dengan konsultasi prima."
+  },
+  "profile": {
+    "name": "Maya Putri",
+    "email": "maya@example.com",
+    "phone": "0812 0000 0123",
+    "address": "Bandung, Jawa Barat",
+    "notifications": true
+  },
+  "projects": [
+    {
+      "id": "P1",
+      "name": "Liny Asri Residence",
+      "city": "Bandung",
+      "location": "Bandung Selatan, Jawa Barat",
+      "category": "Modern tropis",
+      "image": "house-1",
+      "price": 650000000,
+      "units": 24,
+      "status": "Pemasaran",
+      "description": "Ritme kota, ketenangan rumah. Kawasan hunian dengan ruang terbuka hijau dan arsitektur tropis yang menyambut cahaya alami.",
+      "facilities": [
+        "One gate system",
+        "Taman komunal",
+        "Rencana pengelolaan keamanan",
+        "Jalur pedestrian"
+      ],
+      "tag": "Pilihan keluarga"
+    },
+    {
+      "id": "P2",
+      "name": "Jaya Park Living",
+      "city": "Bekasi",
+      "location": "Jatiasih, Bekasi",
+      "category": "Kontemporer",
+      "image": "house-3",
+      "price": 780000000,
+      "units": 18,
+      "status": "Pembangunan",
+      "description": "Hunian kontemporer dengan ruang fleksibel untuk keluarga yang terus bertumbuh. Dekat konektivitas kota, tetap terasa privat.",
+      "facilities": [
+        "Clubhouse",
+        "Taman bermain",
+        "Rencana pengelolaan keamanan",
+        "Akses tol"
+      ],
+      "tag": "Lokasi strategis"
+    },
+    {
+      "id": "P3",
+      "name": "Natura Hills",
+      "city": "Bogor",
+      "location": "Sentul, Bogor",
+      "category": "Eco living",
+      "image": "neighborhood",
+      "price": 895000000,
+      "units": 16,
+      "status": "Pemasaran",
+      "description": "Bangun keseharian yang lebih dekat dengan alam. Rumah berlangit tinggi, taman pribadi, dan lanskap hijau yang menenangkan.",
+      "facilities": [
+        "Ruang hijau",
+        "Jogging track",
+        "Taman pribadi",
+        "Area komunitas"
+      ],
+      "tag": "Dekat dengan alam"
+    }
+  ],
+  "units": [
+    {
+      "id": "U1",
+      "project": "P1",
+      "block": "A",
+      "number": "01",
+      "type": "60/90",
+      "land": 90,
+      "building": 60,
+      "beds": 2,
+      "baths": 2,
+      "floors": 2,
+      "price": 650000000,
+      "sale": "DP terverifikasi",
+      "construction": "Dalam pembangunan",
+      "progress": 42,
+      "stage": "Struktur & dinding",
+      "estimate": "2027-03-31",
+      "image": "house-1"
+    },
+    {
+      "id": "U2",
+      "project": "P1",
+      "block": "A",
+      "number": "02",
+      "type": "60/90",
+      "land": 90,
+      "building": 60,
+      "beds": 2,
+      "baths": 2,
+      "floors": 2,
+      "price": 665000000,
+      "sale": "Tersedia",
+      "construction": "Belum dibangun",
+      "progress": 0,
+      "stage": "Persiapan",
+      "estimate": "2027-05-31",
+      "image": "house-1"
+    },
+    {
+      "id": "U3",
+      "project": "P1",
+      "block": "A",
+      "number": "03",
+      "type": "72/105",
+      "land": 105,
+      "building": 72,
+      "beds": 3,
+      "baths": 2,
+      "floors": 2,
+      "price": 745000000,
+      "sale": "Dipesan",
+      "construction": "Belum dibangun",
+      "progress": 0,
+      "stage": "Persiapan",
+      "estimate": "2027-05-31",
+      "image": "house-1"
+    },
+    {
+      "id": "U4",
+      "project": "P1",
+      "block": "A",
+      "number": "04",
+      "type": "72/105",
+      "land": 105,
+      "building": 72,
+      "beds": 3,
+      "baths": 2,
+      "floors": 2,
+      "price": 760000000,
+      "sale": "Tersedia",
+      "construction": "Belum dibangun",
+      "progress": 0,
+      "stage": "Persiapan",
+      "estimate": "2027-05-31",
+      "image": "house-1"
+    },
+    {
+      "id": "U5",
+      "project": "P1",
+      "block": "B",
+      "number": "01",
+      "type": "90/120",
+      "land": 120,
+      "building": 90,
+      "beds": 3,
+      "baths": 3,
+      "floors": 2,
+      "price": 880000000,
+      "sale": "Terjual",
+      "construction": "Selesai",
+      "progress": 100,
+      "stage": "Finishing",
+      "estimate": "2026-10-01",
+      "image": "house-2"
+    },
+    {
+      "id": "U6",
+      "project": "P1",
+      "block": "B",
+      "number": "02",
+      "type": "60/90",
+      "land": 90,
+      "building": 60,
+      "beds": 2,
+      "baths": 2,
+      "floors": 2,
+      "price": 670000000,
+      "sale": "Tersedia",
+      "construction": "Belum dibangun",
+      "progress": 0,
+      "stage": "Persiapan",
+      "estimate": "2027-05-31",
+      "image": "house-1"
+    },
+    {
+      "id": "U7",
+      "project": "P2",
+      "block": "C",
+      "number": "01",
+      "type": "72/105",
+      "land": 105,
+      "building": 72,
+      "beds": 3,
+      "baths": 2,
+      "floors": 2,
+      "price": 780000000,
+      "sale": "Tersedia",
+      "construction": "Belum dibangun",
+      "progress": 0,
+      "stage": "Persiapan",
+      "estimate": "2027-06-30",
+      "image": "house-3"
+    },
+    {
+      "id": "U8",
+      "project": "P2",
+      "block": "C",
+      "number": "02",
+      "type": "90/120",
+      "land": 120,
+      "building": 90,
+      "beds": 3,
+      "baths": 3,
+      "floors": 2,
+      "price": 925000000,
+      "sale": "Terjual",
+      "construction": "Diserahterimakan",
+      "progress": 100,
+      "stage": "Serah terima",
+      "estimate": "2026-09-30",
+      "image": "house-3"
+    },
+    {
+      "id": "U9",
+      "project": "P3",
+      "block": "D",
+      "number": "01",
+      "type": "90/120",
+      "land": 120,
+      "building": 90,
+      "beds": 3,
+      "baths": 3,
+      "floors": 2,
+      "price": 895000000,
+      "sale": "Tersedia",
+      "construction": "Belum dibangun",
+      "progress": 0,
+      "stage": "Persiapan",
+      "estimate": "2027-06-30",
+      "image": "neighborhood"
+    }
+  ],
+  "bookings": [
+    {
+      "id": "BK-001",
+      "unit": "U1",
+      "client": "Maya Putri",
+      "date": "2026-10-01",
+      "status": "DP terverifikasi",
+      "note": "Pembangunan sesuai desain standar."
+    },
+    {
+      "id": "BK-002",
+      "unit": "U3",
+      "client": "Andi Pratama",
+      "date": "2026-11-04",
+      "status": "Menunggu DP",
+      "note": "Survei lokasi telah dilakukan."
+    }
+  ],
+  "payments": [
+    {
+      "id": "PAY-001",
+      "booking": "BK-001",
+      "client": "Maya Putri",
+      "kind": "DP",
+      "amount": 130000000,
+      "due": "2026-10-05",
+      "date": "2026-10-03",
+      "status": "Terverifikasi",
+      "proof": "Lampiran pembayaran PAY-001"
+    },
+    {
+      "id": "PAY-002",
+      "booking": "BK-001",
+      "client": "Maya Putri",
+      "kind": "Termin 1",
+      "amount": 195000000,
+      "due": "2026-12-01",
+      "date": "",
+      "status": "Belum dibayar",
+      "proof": ""
+    },
+    {
+      "id": "PAY-003",
+      "booking": "BK-002",
+      "client": "Andi Pratama",
+      "kind": "DP",
+      "amount": 149000000,
+      "due": "2026-11-10",
+      "date": "2026-11-05",
+      "status": "Menunggu verifikasi",
+      "proof": "Lampiran pembayaran PAY-003"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "TS-001",
+      "title": "Pengecoran kolom lantai dua",
+      "unit": "U1",
+      "employee": "Rafi Hidayat",
+      "deadline": "2026-11-12",
+      "priority": "Tinggi",
+      "status": "Dikerjakan",
+      "description": "Periksa pembesian dan bekisting sebelum pengecoran. Dokumentasikan hasil pemeriksaan."
+    },
+    {
+      "id": "TS-002",
+      "title": "Inspeksi instalasi plumbing",
+      "unit": "U1",
+      "employee": "Dewi Lestari",
+      "deadline": "2026-11-16",
+      "priority": "Sedang",
+      "status": "Baru",
+      "description": "Periksa jalur air bersih dan air kotor sesuai blueprint."
+    }
+  ],
+  "reports": [
+    {
+      "id": "RP-001",
+      "unit": "U1",
+      "employee": "Rafi Hidayat",
+      "date": "2026-11-06",
+      "title": "Pemasangan dinding lantai dasar",
+      "progress": 42,
+      "stage": "Struktur & dinding",
+      "description": "Dinding lantai dasar selesai. Pemeriksaan elevasi dan mutu material sesuai rencana.",
+      "issue": "Tidak ada kendala.",
+      "status": "Disetujui",
+      "image": "construction"
+    }
+  ],
+  "leads": [
+    {
+      "id": "LD-001",
+      "name": "Nadia Salsabila",
+      "email": "nadia@example.com",
+      "phone": "0812 0000 0456",
+      "project": "P1",
+      "interest": "Survei lokasi",
+      "date": "2026-11-09",
+      "status": "Baru",
+      "notes": "Mencari rumah pertama untuk keluarga."
+    },
+    {
+      "id": "LD-002",
+      "name": "Dimas Saputra",
+      "email": "dimas@example.com",
+      "phone": "0812 0000 0789",
+      "project": "P2",
+      "interest": "Konsultasi KPR",
+      "date": "2026-11-11",
+      "status": "Dihubungi",
+      "notes": "Tertarik tipe 72/105."
+    }
+  ],
+  "employees": [
+    {
+      "id": "EMP-001",
+      "name": "Rafi Hidayat",
+      "division": "Konstruksi",
+      "position": "Site Supervisor",
+      "email": "rafi@example.com",
+      "status": "Aktif"
+    },
+    {
+      "id": "EMP-002",
+      "name": "Dewi Lestari",
+      "division": "Teknik",
+      "position": "Quality Control",
+      "email": "dewi@example.com",
+      "status": "Aktif"
+    },
+    {
+      "id": "EMP-003",
+      "name": "Arif Nugraha",
+      "division": "Pemasaran",
+      "position": "Property Consultant",
+      "email": "arif@example.com",
+      "status": "Aktif"
+    }
+  ],
+  "expenses": [
+    {
+      "id": "EX-001",
+      "title": "Material struktur tahap 2",
+      "amount": 45000000,
+      "project": "P1",
+      "date": "2026-11-05",
+      "status": "Menunggu persetujuan",
+      "description": "Besi tulangan, semen, dan agregat."
+    },
+    {
+      "id": "EX-002",
+      "title": "Pekerjaan taman komunal",
+      "amount": 18000000,
+      "project": "P2",
+      "date": "2026-10-20",
+      "status": "Disetujui",
+      "description": "Penanaman dan pemeliharaan awal."
+    }
+  ],
+  "tickets": [
+    {
+      "id": "TK-001",
+      "client": "Maya Putri",
+      "title": "Konfirmasi warna cat ruang keluarga",
+      "category": "Perubahan desain",
+      "message": "Apakah warna cat ruang keluarga dapat diganti menjadi warm white?",
+      "date": "2026-11-05",
+      "status": "Diproses",
+      "reply": "Tim teknik sedang memeriksa pilihan warna sesuai spesifikasi."
+    }
+  ],
+  "announcements": [
+    {
+      "id": "AN-001",
+      "title": "Koordinasi progres mingguan",
+      "message": "Koordinasi lapangan setiap Senin pukul 08.00. Siapkan dokumentasi dan daftar kebutuhan material.",
+      "date": "2026-11-06",
+      "audience": "Semua karyawan"
+    },
+    {
+      "id": "AN-002",
+      "title": "Standar dokumentasi pekerjaan",
+      "message": "Sertakan foto sebelum dan sesudah untuk setiap laporan tahap pekerjaan.",
+      "date": "2026-11-03",
+      "audience": "Konstruksi"
+    }
+  ],
+  "attendance": [
+    {
+      "id": "AT-001",
+      "employee": "Rafi Hidayat",
+      "date": "2026-11-06",
+      "in": "07:58",
+      "out": "17:03",
+      "status": "Hadir"
+    }
+  ],
+  "leave": [],
+  "favorites": [],
+  "documents": [
+    {
+      "id": "DOC-001",
+      "booking": "BK-001",
+      "client": "Maya Putri",
+      "title": "Perjanjian pemesanan rumah",
+      "kind": "Perjanjian",
+      "date": "2026-10-01",
+      "status": "Tersedia"
+    },
+    {
+      "id": "DOC-002",
+      "booking": "BK-001",
+      "client": "Maya Putri",
+      "title": "Spesifikasi & denah tipe 60/90",
+      "kind": "Teknis",
+      "date": "2026-10-02",
+      "status": "Tersedia"
+    }
+  ],
+  "services": [
+    {
+      "id": "SV-001",
+      "name": "Pengembangan kawasan",
+      "description": "Perencanaan kawasan, infrastruktur, dan hunian dalam satu lingkungan yang terintegrasi.",
+      "icon": "layers"
+    },
+    {
+      "id": "SV-002",
+      "name": "Pembangunan rumah",
+      "description": "Dari gambar kerja hingga serah terima, dengan tahapan pembangunan yang dapat dipantau.",
+      "icon": "home"
+    },
+    {
+      "id": "SV-003",
+      "name": "Konsultasi properti",
+      "description": "Pendampingan memilih lokasi, tipe hunian, dan rencana pembelian yang sesuai kebutuhan.",
+      "icon": "message"
+    },
+    {
+      "id": "SV-004",
+      "name": "Konstruksi & renovasi",
+      "description": "Solusi konstruksi dan penyesuaian ruang dengan perencanaan teknis yang terukur.",
+      "icon": "tool"
+    }
+  ],
+  "partners": [
+    {
+      "id": "PT-001",
+      "name": "Bank Syariah Indonesia",
+      "category": "Perbankan & pembiayaan",
+      "logo": "assets/partners/bsi.svg",
+      "website": "https://www.bankbsi.co.id/",
+      "description": "Bank syariah dengan layanan pembiayaan kepemilikan rumah dan solusi perbankan untuk kebutuhan keluarga."
+    },
+    {
+      "id": "PT-002",
+      "name": "Wijaya Karya",
+      "category": "Konstruksi & engineering",
+      "logo": "assets/partners/wika.png",
+      "website": "https://www.wika.co.id/",
+      "description": "Perusahaan engineering dan konstruksi Indonesia dengan portofolio pekerjaan bangunan serta infrastruktur."
+    },
+    {
+      "id": "PT-003",
+      "name": "PT PP (Persero) Tbk",
+      "category": "Konstruksi & investasi",
+      "logo": "assets/partners/pp.webp",
+      "website": "https://www.ptpp.co.id/",
+      "description": "Perusahaan konstruksi dan investasi yang mengembangkan kapabilitas pada bangunan, infrastruktur, dan engineering."
+    },
+    {
+      "id": "PT-004",
+      "name": "SIG — Semen Indonesia",
+      "category": "Material & solusi bangunan",
+      "logo": "assets/partners/sig.png",
+      "website": "https://www.sig.id/",
+      "description": "Penyedia semen dan solusi bahan bangunan untuk mendukung kebutuhan konstruksi serta pengembangan kawasan."
+    }
+  ],
+  "articles": [
+    {
+      "id": "AR-001",
+      "title": "Panduan Memilih Cara Bayar: Cash Keras, Cash Bertahap, atau KPR?",
+      "category": "Panduan Finansial",
+      "date": "2026-11-03",
+      "image": "interior",
+      "summary": "Ketahui keunggulan Cash Keras dengan diskon spesial, kemudahan Cash Bertahap bunga 0%, dan keringanan KPR Bank.",
+      "body": "Memilih metode pembayaran rumah yang tepat sama pentingnya dengan memilih lokasi dan tipe hunian. Di LinyJaya Development, calon pembeli diberikan kebebasan memilih tiga metode pembayaran resmi yang transparan:\n\n1. Cash Keras (Tunai Keras): Cocok bagi Anda yang memiliki dana likuid dan ingin mendapatkan keuntungan finansial maksimal. Anda berhak mendapatkan diskon langsung 5%, bebas seluruh biaya legalitas (BPHTB, Notaris, Balik Nama SHM), serta prioritas serah terima unit.\n\n2. Cash Lunak / Bertahap ke Developer: Solusi terbaik jika Anda ingin mencicil tanpa melalui proses bank. Skema ini mengenakan bunga 0% flat langsung ke LinyJaya, tanpa BI Checking / SLIK OJK, dengan pilihan tenor 12, 24, hingga 36 bulan. Syaratnya cukup KTP dan NPWP.\n\n3. KPR Bank (Syariah & Konvensional): Pilihan tepat untuk cicilan ringan jangka panjang (10 hingga 25 tahun). Didukung oleh bank mitra terkemuka seperti BSI, BTN, Mandiri, BCA, dan BNI, dengan program promo DP mulai 10% serta subsidi biaya KPR hingga Rp 15 Juta. Tim Property Advisor LinyJaya siap mendampingi pemberkasan Anda hingga akad kredit."
+    },
+    {
+      "id": "AR-002",
+      "title": "Mengenal tahapan pembangunan rumah Anda",
+      "category": "Konstruksi",
+      "date": "2026-10-28",
+      "image": "construction",
+      "summary": "Dari persiapan lahan hingga finishing: pahami apa yang dikerjakan di setiap tahap.",
+      "body": "Pembangunan dimulai dari persiapan lahan dan pengukuran, kemudian pondasi, struktur, dinding, atap, serta instalasi. Setiap tahap membutuhkan pemeriksaan sebelum pekerjaan berikutnya dimulai.\n\nFinishing mencakup lantai, cat, perlengkapan, dan pemeriksaan akhir. Persentase progres merupakan ringkasan pekerjaan, bukan pengganti laporan pemeriksaan mutu.\n\nDokumentasi dan laporan progres membantu Anda memahami perkembangan rumah dalam satu rangkaian tahapan. Periksa pembaruan jadwal secara berkala dan diskusikan kebutuhan Anda dengan tim proyek."
+    },
+    {
+      "id": "AR-003",
+      "title": "Cahaya alami, detail kecil yang mengubah suasana",
+      "category": "Inspirasi hunian",
+      "date": "2026-10-20",
+      "image": "house-2",
+      "summary": "Ruang yang sehat dimulai dari sirkulasi udara dan pencahayaan yang direncanakan.",
+      "body": "Bukaan yang direncanakan dengan baik membantu cahaya alami masuk dan udara bersirkulasi. Perhatikan orientasi bangunan, kedalaman ruang, dan peneduh.\n\nTaman kecil, jendela yang saling berhadapan, dan material berwarna terang dapat memperbaiki pengalaman ruang. Diskusikan perubahan desain dengan tim teknik sebelum pelaksanaan."
+    }
+  ],
+  "audit": [
+    {
+      "id": "LOG-001",
+      "date": "2026-11-06T09:00:00",
+      "actor": "Administrator",
+      "action": "Laporan RP-001 disetujui. Progres A-01: 42%."
+    }
+  ],
+  "offers": [
+    {
+      "id": "OF-001",
+      "name": "Penawaran tipe 60/90",
+      "client": "Nadia Salsabila",
+      "unit": "U2",
+      "amount": 665000000,
+      "date": "2026-11-15",
+      "status": "Draf"
+    }
+  ],
+  "promos": [
+    {
+      "id": "PR-001",
+      "name": "Promo Cash Keras Diskon 5%",
+      "project": "P1",
+      "start": "2026-11-01",
+      "end": "2026-12-31",
+      "description": "Dapatkan potongan langsung 5%, Free BPHTB, Free AJB & SHM, plus bonus Smart Door Lock dan Canopy Carport.",
+      "status": "Aktif"
+    },
+    {
+      "id": "PR-002",
+      "name": "Cash Bertahap Developer Bunga 0%",
+      "project": "P2",
+      "start": "2026-11-01",
+      "end": "2026-12-31",
+      "description": "Cicilan bertahap flat hingga 36 bulan langsung ke developer. Tanpa BI Checking dan proses 100% disetujui.",
+      "status": "Aktif"
+    },
+    {
+      "id": "PR-003",
+      "name": "KPR Express & Subsidi Biaya",
+      "project": "P3",
+      "start": "2026-11-01",
+      "end": "2026-12-31",
+      "description": "DP ringan mulai 10% dengan subsidi biaya KPR s.d. Rp 15 Juta. Bekerja sama dengan BSI, Mandiri, BTN, BCA, & BNI.",
+      "status": "Aktif"
+    }
+  ],
+  "communications": [
+    {
+      "id": "CM-001",
+      "name": "Nadia Salsabila",
+      "date": "2026-11-05",
+      "channel": "Telepon",
+      "notes": "Konfirmasi agenda survei 9 November.",
+      "status": "Selesai"
+    }
+  ],
+  "schedules": [
+    {
+      "id": "SC-001",
+      "unit": "U1",
+      "stage": "Atap & instalasi",
+      "start": "2026-12-01",
+      "end": "2027-01-31",
+      "employee": "Rafi Hidayat",
+      "status": "Terjadwal"
+    }
+  ],
+  "messages": [
+    {
+      "id": "MSG-001",
+      "name": "Administrator",
+      "subject": "Pemeriksaan material pekan ini",
+      "message": "Mohon lengkapi checklist penerimaan material sebelum pekerjaan struktur dilanjutkan.",
+      "date": "2026-11-06",
+      "status": "Baru"
+    }
+  ],
+  "accounts": [
+    {
+      "id": "ACC-001",
+      "name": "Administrator",
+      "email": "admin@linyjaya.example",
+      "role": "Administrator",
+      "status": "Aktif"
+    },
+    {
+      "id": "ACC-002",
+      "name": "Maya Putri",
+      "email": "maya@example.com",
+      "role": "Klien",
+      "status": "Aktif"
+    },
+    {
+      "id": "ACC-003",
+      "name": "Rafi Hidayat",
+      "email": "rafi@example.com",
+      "role": "Karyawan",
+      "status": "Aktif"
+    },
+    {
+      "id": "ACC-004",
+      "name": "Aditya Wijaya",
+      "email": "aditya@example.com",
+      "role": "Pimpinan",
+      "status": "Aktif"
+    }
+  ],
+  "notifications": [
+    {
+      "id": "NT-001",
+      "title": "Progres rumah diperbarui",
+      "message": "Unit A-01 mencapai 42% pada tahap struktur & dinding.",
+      "role": "Klien",
+      "date": "2026-11-06",
+      "status": "Baru"
+    }
+  ],
+  "settings": {
+    "notifications": true
+  },
+  "account": {
+    "name": "Administrator",
+    "email": "admin@linyjaya.example"
+  },
+  "evaluations": [
+    {
+      "id": "EV-001",
+      "employee": "Rafi Hidayat",
+      "period": "November 2026",
+      "score": 88,
+      "notes": "Dokumentasi pekerjaan rapi. Pertahankan ketepatan waktu laporan.",
+      "status": "Selesai"
+    }
+  ]
+}
