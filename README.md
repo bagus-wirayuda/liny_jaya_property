@@ -12,7 +12,20 @@ php artisan serve --host=127.0.0.1 --port=8000
 
 Buka http://localhost:8000/login. Halaman publik ada di http://localhost:8000/. Sesudah login, akun diarahkan ke dashboard sesuai role. Seluruh menu HTML yang sudah ada tetap tersedia melalui Laravel. Aset desain tersedia di public/ dan proses build frontend tidak diperlukan.
 
-Untuk instalasi baru, jalankan composer install, salin .env.example menjadi .env, lalu php artisan key:generate. Pilih koneksi database di .env dan jalankan php artisan migrate --seed. SQLite dipakai pada lingkungan lokal yang disediakan. Migrasi juga menggunakan tipe schema dan foreign key Laravel untuk konfigurasi MySQL. Peralihan koneksi database memerlukan migrasi dan pemindahan data ke database tujuan.
+Untuk instalasi baru, jalankan composer install, salin .env.example menjadi .env, lalu php artisan key:generate. Proyek menggunakan MySQL dengan database lokal linyjaya_development pada Laragon. Isi host, port, nama database, nama pengguna, dan password MySQL pada .env. Untuk database baru tanpa data, jalankan php artisan migrate --seed.
+
+## Impor database ke server
+
+Ekspor schema dan data tersedia pada database/linyjaya_development.sql. File ini telah diuji dengan impor ulang ke MySQL. Akun, password yang telah di-hash, relasi, serta catatan transaksi ikut diekspor.
+
+1. Buat dan pilih database kosong di server, misalnya melalui phpMyAdmin.
+2. Gunakan menu Import untuk mengimpor linyjaya_development.sql. File mengikuti database yang dipilih sehingga nama database server boleh berbeda.
+3. Sesuaikan DB_CONNECTION=mysql, DB_HOST, DB_PORT, DB_DATABASE, DB_USERNAME, dan DB_PASSWORD pada .env server.
+4. Jalankan php artisan config:clear dan php artisan migrate:status untuk memastikan koneksi serta migrasinya terbaca.
+
+Ekspor sudah berisi tabel migrations. Saat memakai file SQL ini, tidak perlu mengisi data awal kembali. Hindari migrate:fresh pada database yang sudah diimpor karena perintah tersebut menghapus tabel.
+
+Data dari SQLite sebelumnya telah disalin dan dibandingkan isinya dengan MySQL. Salinan database-before-mysql-*.sqlite disimpan di folder database sebagai cadangan sebelum perpindahan.
 
 ## Akun dan akses
 
