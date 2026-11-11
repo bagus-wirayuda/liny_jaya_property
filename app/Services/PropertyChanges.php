@@ -29,7 +29,7 @@ class PropertyChanges
         abort_if($workspace && ! $user, 401);
 
         if ($group === 'profile') {
-            abort_unless(in_array($role, ['client', 'employee'], true) && $operation === 'update' && $id === 'self', 403);
+            abort_unless(in_array($role, ['admin', 'director', 'client', 'employee'], true) && $operation === 'update' && $id === 'self', 403);
             $this->updateProfile($user, $fields);
 
             return;
@@ -67,8 +67,8 @@ class PropertyChanges
         }
 
         $allowed = match ($role) {
-            'admin' => ['payments' => 'create', 'documents' => 'create', 'tickets' => 'update', 'leave' => 'update'],
-            'director' => ['projects' => 'update', 'expenses' => 'update', 'documents' => 'update', 'tickets' => 'update', 'leave' => 'update'],
+            'admin' => ['payments' => 'create', 'documents' => 'create', 'tickets' => 'update', 'leave' => 'update', 'messages' => ['create', 'update']],
+            'director' => ['projects' => 'update', 'expenses' => 'update', 'documents' => 'update', 'tickets' => 'update', 'leave' => 'update', 'messages' => ['create', 'update']],
             'employee' => ['messages' => 'create', 'reports' => ['create', 'update'], 'leave' => 'create'],
             'client' => ['tickets' => 'create'],
             default => [],
@@ -91,6 +91,7 @@ class PropertyChanges
         $rules = match ($group) {
             'projects' => ['status' => config('linyjaya_fields.projects.status'), 'evaluation' => ['required', 'string', 'max:3000']],
             'tickets' => ['status' => ['required', 'in:Baru,Diproses,Disetujui,Ditolak,Selesai'], 'reply' => ['required', 'string', 'max:3000']],
+            'messages' => ['status' => ['required', 'in:Baru,Diproses,Selesai'], 'reply' => ['nullable', 'string', 'max:3000']],
             default => ['status' => ['required', 'in:Disetujui,Ditolak']],
         };
         if (in_array($group, ['expenses', 'documents', 'leave'], true)) {
@@ -100,6 +101,12 @@ class PropertyChanges
             abort_unless($data['category'] === 'Perubahan desain', 404);
         }
         $this->records->put($group, $id, [...$data, ...$this->validate($fields, $rules, true)]);
+        if ($group === 'messages' && $row->author_id) {
+            $author = User::query()->find($row->author_id);
+            if ($author?->role === 'employee' && $author->employee_id) {
+                $this->records->notify('employee', 'Tanggapan pesan internal', $data['subject'], employee: $author->employee_id);
+            }
+        }
         if ($group === 'tickets') {
             $this->records->notify('client', 'Tanggapan layanan diperbarui', $data['title'], $row->client_id);
         }
@@ -232,7 +239,13 @@ class PropertyChanges
         }
         if ($group === 'messages') {
             $data = $this->validate($fields, config('linyjaya_fields.messages'));
-            $this->records->put($group, $id, [...$data, 'date' => $today, 'status' => 'Baru'], ['author_id' => $user->id]);
+            $this->records->put($group, $id, [...$data, 'date' => $today, 'status' => 'Baru', 'reply' => ''], ['author_id' => $user->id]);
+            if ($user->role === 'employee') {
+                $this->records->notify('admin', 'Pesan tim internal', $data['subject']);
+                $this->records->notify('director', 'Pesan tim internal', $data['subject']);
+            } else {
+                $this->records->notify('employee', 'Pesan manajemen baru', $data['subject']);
+            }
 
             return;
         }

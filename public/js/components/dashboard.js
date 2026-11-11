@@ -10,7 +10,8 @@
       if (!active) return link;
       return `<div class="sidebar-entry"><div class="sidebar-entry-line">${link}<button type="button" class="sidebar-submenu-toggle" data-action="sidebar-submenu" aria-label="Submenu ${E(label)}" aria-controls="workspace-submenu" aria-expanded="false" hidden>${I("chevron", "sm")}</button></div><div id="workspace-submenu" class="sidebar-submenu" inert aria-hidden="true" hidden><div class="sidebar-submenu-links"></div></div></div>`;
     }).join("");
-    return `<div class="workspace workspace--${r.folder}"><div class="sidebar-overlay" data-action="sidebar"></div><aside id="workspace-sidebar" class="sidebar" aria-label="Menu ${r.name}"><div class="sidebar-brand">${LJ.brand(LJ.rolePage(role))}</div><div class="workspace-label">${r.name.toUpperCase()}</div><nav class="sidebar-scroll" aria-label="Navigasi ruang kerja">${links}<div class="workspace-label workspace-company-label">LINYJAYA DEVELOPMENT</div><a class="sidebar-link" href="index.html">${I("external")}Kembali ke website</a></nav><div class="sidebar-bottom"><button type="button" class="sidebar-account" data-action="profile-dropdown" aria-label="Menu profil ${E(r.person)}"><span class="avatar">${initials}</span><span><strong>${E(r.person)}</strong><small>${r.name}</small></span></button></div></aside><header class="topbar"><div class="flex"><button class="icon-btn menu-toggle" data-action="sidebar" aria-label="Menu ruang kerja" aria-controls="workspace-sidebar" aria-expanded="false">${I("menu")}</button><div class="topbar-title"><span>Ruang kerja ${I("chevron", "sm")}</span><strong id="workspace-breadcrumb"></strong></div></div><div class="topbar-actions"><span class="demo-indicator">LINYJAYA</span><button type="button" class="icon-btn theme-toggle-btn" data-action="theme-toggle" aria-label="${LJ.getTheme?.() === "dark" ? "Ganti ke mode terang" : "Ganti ke mode gelap"}" title="${LJ.getTheme?.() === "dark" ? "Mode Terang" : "Mode Gelap"}">${I(LJ.getTheme?.() === "dark" ? "sun" : "moon")}</button>${LJ.iBtn("search", "global-search", "", "Cari di ruang kerja")}<button class="icon-btn" data-action="notifications" aria-label="Lihat notifikasi">${I("bell")}<span class="notification-dot"></span></button><button type="button" class="avatar topbar-avatar-btn" data-action="profile-dropdown" aria-label="Menu profil ${E(r.person)}" title="Profil ${E(r.person)}">${initials}</button></div></header><main class="workspace-main" id="main"><div id="workspace-content"></div><footer class="workspace-footer"><span>© LinyJaya Development · Ruang kerja ${r.name}</span><span>Informasi proyek dan catatan administrasi</span></footer></main></div>`;
+    const unreadCount = LJ.db.notifications.filter((n) => n.status === "Baru").length;
+    return `<div class="workspace workspace--${r.folder}"><div class="sidebar-overlay" data-action="sidebar"></div><aside id="workspace-sidebar" class="sidebar" aria-label="Menu ${r.name}"><div class="sidebar-brand">${LJ.brand(LJ.rolePage(role))}</div><div class="workspace-label">${r.name.toUpperCase()}</div><nav class="sidebar-scroll" aria-label="Navigasi ruang kerja">${links}<div class="workspace-label workspace-company-label">LINYJAYA DEVELOPMENT</div><a class="sidebar-link" href="./">${I("external")}Kembali ke website</a></nav><div class="sidebar-bottom"><button type="button" class="sidebar-account" data-action="profile-dropdown" aria-label="Menu profil ${E(r.person)}"><span class="avatar">${initials}</span><span><strong>${E(r.person)}</strong><small>${r.name}</small></span></button></div></aside><header class="topbar"><div class="flex"><button class="icon-btn menu-toggle" data-action="sidebar" aria-label="Menu ruang kerja" aria-controls="workspace-sidebar" aria-expanded="false">${I("menu")}</button><div class="topbar-title"><span>Ruang kerja ${I("chevron", "sm")}</span><strong id="workspace-breadcrumb"></strong></div></div><div class="topbar-actions"><span class="demo-indicator">LINYJAYA</span><button type="button" class="icon-btn theme-toggle-btn" data-action="theme-toggle" aria-label="${LJ.getTheme?.() === "dark" ? "Ganti ke mode terang" : "Ganti ke mode gelap"}" title="${LJ.getTheme?.() === "dark" ? "Mode Terang" : "Mode Gelap"}">${I(LJ.getTheme?.() === "dark" ? "sun" : "moon")}</button>${LJ.iBtn("search", "global-search", "", "Cari di ruang kerja")}<button class="icon-btn" data-action="notifications" aria-label="Lihat notifikasi">${I("bell")}<span class="notification-dot"${unreadCount ? "" : " hidden"}></span></button><button type="button" class="avatar topbar-avatar-btn" data-action="profile-dropdown" aria-label="Menu profil ${E(r.person)}" title="Profil ${E(r.person)}">${initials}</button></div></header><main class="workspace-main" id="main"><div id="workspace-content"></div><footer class="workspace-footer"><span>© LinyJaya Development · Ruang kerja ${r.name}</span><span>Informasi proyek dan catatan administrasi</span></footer></main></div>`;
   };
   const descriptions = {
     overview: "Semua yang perlu Anda ketahui, dalam satu pandangan.",
@@ -447,6 +448,11 @@
     );
   }
   function constructionTable(us) {
+    const activeBookingUnits = new Set(
+      (LJ.db.bookings || [])
+        .filter((b) => b.status === "DP terverifikasi")
+        .map((b) => b.unit),
+    );
     return LJ.table(
       ["Unit / proyek", "Penjualan", "Pembangunan", "Progres", "Aksi"],
       us.map((u) => [
@@ -454,7 +460,7 @@
         LJ.badge(u.sale),
         LJ.badge(u.construction),
         `<strong>${u.progress}%</strong><small>${E(u.stage)}</small>`,
-        `<div class="table-actions">${LJ.iBtn("eye", "unit-view", u.id, "Detail unit")}${u.sale === "DP terverifikasi" && u.construction === "Belum dibangun" ? LJ.iBtn("play", "construction-start", u.id, "Mulai pembangunan") : ""}${u.construction === "Selesai" ? LJ.iBtn("check", "handover", u.id, "Serah terima") : ""}</div>`,
+        `<div class="table-actions">${LJ.iBtn("eye", "unit-view", u.id, "Detail unit")}${u.sale === "DP terverifikasi" && u.construction === "Belum dibangun" ? LJ.iBtn("play", "construction-start", u.id, "Mulai pembangunan") : ""}${u.construction === "Selesai" && activeBookingUnits.has(u.id) ? LJ.iBtn("check", "handover", u.id, "Serah terima") : ""}</div>`,
       ]),
     );
   }
@@ -513,8 +519,8 @@
       ) +
       (t === "security"
         ? LJ.panel(
-            "Akses akun",
-            `<div class="notice">${I("lock")}Kewenangan akun ditetapkan Administrator. Gunakan email akun untuk mengganti kata sandi.</div>${A("Atur ulang kata sandi", "forgot-password", "secondary", "user")} ${role === "client" ? A("Lengkapi profil", "client/daftar.html", "secondary", "edit") : ""}`,
+            "Ubah kata sandi akun",
+            `<div class="notice">${I("lock")}Kewenangan akun ditetapkan Administrator. Gunakan kata sandi baru minimal 12 karakter untuk menjaga keamanan akun Anda.</div><form id="password-change-form"><div class="form-error" role="alert"></div><div class="form-grid">${[field("current_password", "Kata sandi saat ini", "password"), field("password", "Kata sandi baru", "password", [], { hint: "Minimal 12 karakter." }), field("password_confirmation", "Konfirmasi kata sandi baru", "password")].map((f) => LJ.field(f, "")).join("")}</div><div class="modal-footer">${role === "client" ? A("Lengkapi profil", "client/daftar", "secondary", "edit") : ""}${A("Lupa kata sandi", "forgot-password", "secondary", "user")}<button type="submit" class="btn primary">${I("lock")}Perbarui kata sandi</button></div></form>`,
           )
         : t === "notifications"
           ? LJ.panel(

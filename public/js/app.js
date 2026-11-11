@@ -4,7 +4,7 @@
   let renderedRole = null;
   let dashboardTab = params.get("tab");
   LJ.filters =
-    LJ.currentPage.file === "properti.html"
+    LJ.currentPage.pageKey === "properti"
       ? Object.fromEntries(
           ["city", "type", "price"].map((key) => [key, params.get(key) || ""]),
         )
@@ -33,6 +33,8 @@
       menu.inert = hidden;
       menu.setAttribute("aria-hidden", String(hidden));
     }
+    document.body.classList.toggle("navigation-open",
+      compactNavigation.matches && !!document.querySelector(".sidebar.open, .nav-links.open"));
   }
   function setNavigationOpen(menu, open) {
     menu.classList.toggle("open", open);
@@ -96,6 +98,10 @@
         ?.replaceChildren(
           document.createTextNode(String(LJ.metrics().pending)),
         );
+      const unreadDot = document.querySelector(".notification-dot");
+      if (unreadDot) {
+        unreadDot.hidden = !LJ.db.notifications.some((n) => n.status === "Baru");
+      }
       document.title = `${menuLabel || "Dashboard"} · LinyJaya ${LJ.roles[role].name}`;
     } else {
       renderedRole = null;
@@ -104,7 +110,7 @@
         : LJ.publicPage(file, id);
       LJ.mountArchitecture?.();
       document.title =
-        file === "index.html"
+        file === "home"
           ? "LinyJaya Development — Ruang untuk hidup lebih baik."
           : (document
               .querySelector("h1")
@@ -122,7 +128,7 @@
     }
     syncNavigation();
     revealObserver?.disconnect();
-    if (!role && revealObserver && !reducedMotion.matches) {
+    if (!role && revealObserver && !reducedMotion.matches && !compactNavigation.matches) {
       document
         .querySelectorAll(
           "#main :is(.section-head, .benefits, .project-card, .article-card, .about-copy, .about-image, .lifestyle-card, .process-card, .partner-card, .stats-strip, .cta-band)",
@@ -501,7 +507,7 @@
     "brand-story": () =>
       LJ.modal(
         "Selamat datang di LinyJaya.",
-        `<img src="${LJ.image("interior")}" alt="Ruang keluarga yang nyaman" class="brand-story-image"><h3>Lebih dari alamat. Tempat untuk bertumbuh.</h3><p class="u-mt-14">Jelajahi kawasan yang terencana, temukan tipe hunian yang sesuai, dan kenali setiap detail sebelum menentukan pilihan. Kami hadir untuk mendampingi langkah Anda menuju rumah.</p><div class="modal-footer">${A("Kenali kami lebih dekat", "tentang.html", "primary", "arrow")}</div>`,
+        `<img src="${LJ.image("interior")}" alt="Ruang keluarga yang nyaman" class="brand-story-image"><h3>Lebih dari alamat. Tempat untuk bertumbuh.</h3><p class="u-mt-14">Jelajahi kawasan yang terencana, temukan tipe hunian yang sesuai, dan kenali setiap detail sebelum menentukan pilihan. Kami hadir untuk mendampingi langkah Anda menuju rumah.</p><div class="modal-footer">${A("Kenali kami lebih dekat", "tentang", "primary", "arrow")}</div>`,
       ),
     favorite: async (id, el) => {
       const index = LJ.db.favorites.indexOf(id);
@@ -525,7 +531,7 @@
           '<div class="modal-footer">' +
           A(
             "Buka halaman kebijakan",
-            "kebijakan-privasi.html",
+            "kebijakan-privasi",
             "secondary",
             "arrow",
           ) +
@@ -535,7 +541,7 @@
     "contact-info": () =>
       LJ.modal(
         "Terhubung dengan LinyJaya",
-        `<p>Diskusikan pilihan kawasan, kebutuhan ruang, dan rencana pembelian bersama tim pemasaran. Kunjungan lokasi tersedia melalui perjanjian.</p><div class="modal-footer">${A("Rencanakan konsultasi", "kontak.html", "primary", "message")}</div>`,
+        `<p>Diskusikan pilihan kawasan, kebutuhan ruang, dan rencana pembelian bersama tim pemasaran. Kunjungan lokasi tersedia melalui perjanjian.</p><div class="modal-footer">${A("Rencanakan konsultasi", "kontak", "primary", "message")}</div>`,
       ),
     gallery: (id) => {
       if (
@@ -671,7 +677,7 @@
           LJ.toast(
             "Permohonan konsultasi pemesanan berhasil dicatat. Tim Sales LinyJaya akan mendampingi proses Anda.",
           );
-          openPage("client/bookings.html");
+          openPage("client/bookings");
         },
         "Kirim Permohonan Konsultasi",
         `<div class="notice">${I("home")}<span><strong>${E(LJ.project(u.project)?.name)} · ${LJ.unitLabel(id)}</strong><br>Klien: ${E(LJ.db.profile.name)}<br>Harga katalog: ${LJ.money(u.price)} · Rencana DP: ${LJ.money(Math.round(u.price * 0.2))}. Ketentuan resmi mengikuti kesepakatan perusahaan.</span></div>`,
@@ -878,7 +884,7 @@
             ["Klien", E(b.client)],
             ["Proyek", E(LJ.project(u?.project)?.name)],
             ["Unit", LJ.unitLabel(b.unit)],
-            ["Harga", LJ.money(u.price)],
+            ["Harga", LJ.money(u?.price || 0)],
             ["Tanggal", LJ.date(b.date)],
             ["Metode pembayaran", E(b.paymentMethod || "Belum tercatat")],
             ["Status", LJ.badge(b.status)],
@@ -1311,6 +1317,35 @@
         "Simpan tanggapan",
       );
     },
+    "message-reply": (id) => {
+      const m = LJ.db.messages.find((x) => x.id === id);
+      if (!m) return;
+      LJ.formModal(
+        "Tanggapi pesan internal",
+        [
+          {
+            name: "status",
+            label: "Status pesan",
+            type: "select",
+            options: ["Baru", "Diproses", "Selesai"],
+            required: true,
+          },
+          {
+            name: "reply",
+            label: "Tanggapan",
+            type: "textarea",
+            wide: true,
+            required: false,
+          },
+        ],
+        m,
+        async (data) => {
+          Object.assign(m, data);
+          await saveToast("Pesan internal diperbarui.");
+        },
+        "Simpan tanggapan",
+      );
+    },
     "client-view": (id) => {
       const profile = LJ.db.clients.find((client) => String(client.id) === id);
       if (!profile) return;
@@ -1463,20 +1498,20 @@
           <div class="profile-popover-nav">
             ${
               current === "client"
-                ? `<a href="client/profile.html" class="profile-nav-link">${I("user")}<span>Profil & Akun Klien</span></a>`
+                ? `<a href="client/profile" class="profile-nav-link">${I("user")}<span>Profil & Akun Klien</span></a>`
                 : current === "employee"
-                  ? `<a href="karyawan/profile.html" class="profile-nav-link">${I("user")}<span>Profil & Jam Kerja</span></a>`
+                  ? `<a href="karyawan/profile" class="profile-nav-link">${I("user")}<span>Profil & Jam Kerja</span></a>`
                   : current === "admin"
-                    ? `<a href="admin/settings.html" class="profile-nav-link">${I("settings")}<span>Pengaturan Ruang Kerja</span></a>`
-                    : `<a href="pimpinan/index.html" class="profile-nav-link">${I("chart")}<span>Ringkasan Eksekutif</span></a>`
+                    ? `<a href="admin/settings" class="profile-nav-link">${I("settings")}<span>Pengaturan Ruang Kerja</span></a>`
+                    : `<a href="pimpinan" class="profile-nav-link">${I("chart")}<span>Ringkasan Eksekutif</span></a>`
             }
-            <button type="button" class="profile-nav-link" data-action="notifications">${I("bell")}<span>Notifikasi Sistem (${LJ.db.notifications.length})</span></button>
+            <button type="button" class="profile-nav-link" data-action="notifications">${I("bell")}<span>Notifikasi Sistem (${LJ.db.notifications.filter((n) => n.status === "Baru").length})</span></button>
             <button type="button" class="profile-nav-link" data-action="global-search">${I("search")}<span>Pencarian Cepat</span></button>
             <button type="button" class="profile-nav-link" data-action="theme-toggle">${I(LJ.getTheme?.() === "dark" ? "sun" : "moon")}<span>${LJ.getTheme?.() === "dark" ? "Beralih ke Mode Terang" : "Beralih ke Mode Gelap"}</span></button>
           </div>
         </div>
         <div class="profile-popover-footer">
-          <a href="index.html" class="btn secondary small">${I("external")}Kembali ke website</a>
+          <a href="./" class="btn secondary small">${I("external")}Kembali ke website</a>
           <form id="logout-form" action="${LJ.endpoints.logout}" method="post"><input type="hidden" name="_token" value="${LJ.bootstrap.csrf}"><button class="btn danger small" type="submit">Keluar</button></form>
         </div>
       </div>`;
@@ -1489,6 +1524,7 @@
       await LJ.workflow("notifications-read");
       LJ.toast("Notifikasi ditandai dibaca.");
       LJ.closeModal();
+      LJ.render();
     },
     "global-search": () => {
       LJ.modal(
@@ -1540,6 +1576,10 @@
   document.addEventListener("click", async (e) => {
     const triggerEl = e.target.closest("button, a, [data-action], input, .sidebar-account, .avatar, select");
     if (triggerEl) LJ._lastTrigger = triggerEl;
+    if (compactNavigation.matches && !e.target.closest(".site-nav, .sidebar, [data-action='sidebar']")) {
+      const openMenu = document.querySelector(".nav-links.open");
+      if (openMenu) setNavigationOpen(openMenu, false);
+    }
     if (e.target.closest(".skip-link")) {
       e.preventDefault();
       const main = document.getElementById("main");
@@ -1570,6 +1610,9 @@
       if (currentRole) {
         LJ.tableQuery = "";
         dashboardTab = tab.dataset.tab || tab.dataset.sidebarTab;
+        if (compactNavigation.matches && tab.dataset.sidebarTab) {
+          setNavigationOpen(document.querySelector(".sidebar"), false);
+        }
       } else {
         LJ.publicTab = tab.dataset.tab;
       }
@@ -1593,6 +1636,17 @@
   document.addEventListener("keydown", (e) => {
     const modal = document.querySelector(".modal-overlay:not(.is-closing) .modal");
     if (!modal) {
+      const openSidebar = compactNavigation.matches && document.querySelector(".sidebar.open");
+      if (e.key === "Tab" && openSidebar) {
+        const links = [...openSidebar.querySelectorAll('a[href], button:not([hidden])')]
+          .filter(el => el.offsetParent !== null);
+        const first = links[0], last = links.at(-1);
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault(); last?.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault(); first?.focus();
+        }
+      }
       if (e.key === "Escape" && compactNavigation.matches) {
         const openMenu = document.querySelector(".sidebar.open, .nav-links.open");
         if (openMenu) setNavigationOpen(openMenu, false);
@@ -1642,6 +1696,12 @@
       if (form.id === "company-form") {
         Object.assign(LJ.db.company, data);
         await saveToast("Informasi perusahaan diperbarui.");
+        return;
+      }
+      if (form.id === "password-change-form") {
+        const res = await LJ.changePassword(data);
+        form.reset();
+        LJ.toast(res.message || "Kata sandi berhasil diperbarui.");
         return;
       }
       if (form.id === "profile-form" || form.id === "register-form") {
@@ -1726,7 +1786,7 @@
           LJ.db.articles
             .filter((a) => a.title.toLowerCase().includes(q))
             .forEach((a) =>
-              results.push([a.title, "admin/settings.html?tab=content", "file"]),
+              results.push([a.title, "admin/settings?tab=content", "file"]),
             );
         if (["admin", "director", "employee"].includes(role()))
           LJ.db.tasks
@@ -1762,7 +1822,15 @@
           );
     }
   });
-  compactNavigation.addEventListener("change", syncNavigation);
+  compactNavigation.addEventListener("change", () => {
+    if (!compactNavigation.matches) {
+      document.querySelectorAll(".sidebar.open, .nav-links.open, .sidebar-overlay.open")
+        .forEach(menu => menu.classList.remove("open"));
+      document.querySelectorAll('[aria-controls="workspace-sidebar"], [aria-controls="site-navigation"]')
+        .forEach(toggle => toggle.setAttribute("aria-expanded", "false"));
+    }
+    syncNavigation();
+  });
   function animatePageArrival() {
     const main = document.getElementById("main");
     if (!main) return;

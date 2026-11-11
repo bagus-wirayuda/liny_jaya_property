@@ -20,12 +20,12 @@
             <div class="hero-value-pill">${I("building", "sm")}<span>KPR DP Ringan<br>Subsidi Biaya Rp 15 Jt</span></div>
           </div>
           <div class="hero-actions">
-            ${A("Jelajahi Pilihan Hunian", "properti.html", "primary", "arrow")}
+            ${A("Jelajahi Pilihan Hunian", "properti", "primary", "arrow")}
             ${B("Konsultasi Sales Sekarang", "consult-sales", "", "secondary", "message")}
           </div>
           <div class="hero-proof">
             <span class="icon-tile feature-icon-compact">${I("pin", "sm")}</span>
-            <span>Kawasan Hunian Pilihan<br><strong>Bandung · Bekasi · Bogor</strong></span>
+            <span>Kawasan Hunian Pilihan<br><strong>${E([...new Set(LJ.db.projects.map((p) => p.city))].filter(Boolean).join(" · ") || "Indonesia")}</strong></span>
           </div>
         </div>
         <figure class="architecture" aria-labelledby="architecture-title">
@@ -38,7 +38,7 @@
             <span class="architecture-index">HOT UNIT</span>
           </div>
           <div class="architecture-stage">
-            <img class="architecture-photo" fetchpriority="high" src="${LJ.image("hero")}" alt="Referensi hunian modern dua lantai dengan taman dan kaca lebar">
+            <img class="architecture-photo" loading="lazy" decoding="async" src="${LJ.image("hero")}" alt="Referensi hunian modern dua lantai dengan taman dan kaca lebar">
             <canvas class="architecture-canvas" tabindex="0" aria-label="Model hunian tropis tiga dimensi" aria-describedby="architecture-help" hidden></canvas>
           </div>
           <div class="architecture-footer">
@@ -67,8 +67,8 @@
           <button role="tab" aria-selected="true" class="search-tab active" data-action="search-mode" data-id="hunian">${I("home", "sm")}Cari Hunian Siap Huni</button>
           <button role="tab" aria-selected="false" class="search-tab" data-action="search-mode" data-id="investasi">${I("chart", "sm")}Peluang Investasi Properti</button>
         </div>
-        <form id="hero-search" class="search-fields" action="properti.html" method="get">
-          <div class="search-field">${I("pin")}<div><label for="hero-city">Lokasi Pilihan</label><select id="hero-city" name="city"><option value="">Semua Lokasi (Bandung, Bekasi, Bogor)</option>${[...new Set(LJ.db.projects.map((p) => p.city))].map((c) => `<option>${E(c)}</option>`).join("")}</select></div>${I("chevron", "sm")}</div>
+        <form id="hero-search" class="search-fields" action="properti" method="get">
+          <div class="search-field">${I("pin")}<div><label for="hero-city">Lokasi Pilihan</label><select id="hero-city" name="city"><option value="">Semua Lokasi${LJ.db.projects.length ? ` (${E([...new Set(LJ.db.projects.map((p) => p.city))].filter(Boolean).join(", "))})` : ""}</option>${[...new Set(LJ.db.projects.map((p) => p.city))].map((c) => `<option>${E(c)}</option>`).join("")}</select></div>${I("chevron", "sm")}</div>
           <div class="search-field">${I("home")}<div><label for="hero-type">Tipe Rumah</label><select id="hero-type" name="type"><option value="">Semua Tipe (60/90, 72/105, 90/120)</option><option>60/90</option><option>72/105</option><option>90/120</option></select></div>${I("chevron", "sm")}</div>
           <div class="search-field">${I("layers")}<div><label for="hero-price">Rentang Anggaran</label><select id="hero-price" name="price"><option value="">Semua Harga</option><option value="750000000">Di bawah Rp 750 jt</option><option value="900000000">Di bawah Rp 900 jt</option><option value="1000000000">Di bawah Rp 1 M</option></select></div>${I("chevron", "sm")}</div>
           <button class="btn primary" type="submit">${I("search")}Cari Rumah Idaman</button>
@@ -198,7 +198,7 @@
   LJ.pages.public.home = function () {
     const count = LJ.db.projects.length;
     return `
-      ${LJ.nav("index.html")}
+      ${LJ.nav("./")}
       <main id="main">
         ${architecture()}
         ${LJ.searchPanel()}
@@ -225,10 +225,10 @@
                 <h2>Temukan tempat terbaik Anda pulang.</h2>
                 <p>Setiap kawasan dirancang dengan konsep lingkungan hijau terpadu, one-gate system, dan fasilitas lengkap.</p>
               </div>
-              ${A("Lihat semua properti", "properti.html", "secondary", "arrow")}
+              ${A("Lihat semua properti", "properti", "secondary", "arrow")}
             </div>
             <div class="grid three">${LJ.db.projects.slice(0, 3).map(LJ.projectCard).join("")}</div>
-            <div class="center-link"><a class="text-link" href="properti.html">Jelajahi semua proyek ${I("arrow", "sm")}</a></div>
+            <div class="center-link"><a class="text-link" href="properti">Jelajahi semua proyek ${I("arrow", "sm")}</a></div>
           </div>
         </section>
 
@@ -333,7 +333,7 @@
                 <h2>Inspirasi & Tips Cerdas Membeli Properti</h2>
                 <p>Pahami cara memilih rumah, simulasi angsuran, dan perencanaan investasi keluarga.</p>
               </div>
-              ${A("Semua artikel", "artikel.html", "secondary", "arrow")}
+              ${A("Semua artikel", "artikel", "secondary", "arrow")}
             </div>
             <div class="grid three">${LJ.db.articles.slice(0, 3).map(LJ.articleCard).join("")}</div>
           </div>

@@ -13,6 +13,7 @@
           ["attendance", "Absensi"],
           ["leave", "Izin & cuti"],
           ["evaluation", "Evaluasi"],
+          ["messages", "Pesan internal"],
         ],
         t,
       ) +
@@ -20,6 +21,13 @@
         ? LJ.manager("tasks", { readonly })
         : t === "evaluation"
           ? LJ.manager("evaluations")
+          : t === "messages"
+            ? LJ.manager("messages", {
+                readonly: true,
+                extra: (m) =>
+                  LJ.iBtn("message", "message-reply", m.id, "Tanggapi pesan"),
+              }) +
+              `<div class="mt">${B("Kirim pesan internal", "entity-add", "messages", "primary small", "message")}</div>`
           : t === "leave"
             ? LJ.panel(
                 "Pengajuan izin & cuti",

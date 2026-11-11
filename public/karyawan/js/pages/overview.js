@@ -22,7 +22,7 @@
           "Laporan lapangan",
         ],
       ]) +
-      `<div class="dashboard-grid">${LJ.panel("Prioritas pekerjaan", taskCards(tasks.filter((t) => t.status !== "Selesai")), A("Semua tugas", "karyawan/tasks.html", "ghost small"))}${LJ.panel("Laporan progres terbaru", reportCards(d.reports.filter((r) => r.employee === LJ.employeeName()).slice(0, 1)), B("Buat laporan", "report-new", "", "primary small", "plus"))}</div>${LJ.panel("Pengumuman tim", announcementList(d.announcements))}`
+      `<div class="dashboard-grid">${LJ.panel("Prioritas pekerjaan", taskCards(tasks.filter((t) => t.status !== "Selesai")), A("Semua tugas", "karyawan/tasks", "ghost small"))}${LJ.panel("Laporan progres terbaru", reportCards(d.reports.filter((r) => r.employee === LJ.employeeName()).slice(0, 1)), B("Buat laporan", "report-new", "", "primary small", "plus"))}</div>${LJ.panel("Pengumuman tim", announcementList(d.announcements))}`
     );
   };
 })();

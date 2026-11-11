@@ -54,6 +54,7 @@
     leave: ["date", "kind", "reason"],
     documents: ["booking", "title", "kind", "fileData"],
     tickets: ["title", "category", "message"],
+    messages: ["subject", "message"],
     company: ["name", "tagline", "email", "phone", "address", "hours", "vision", "mission", "logoData"],
     settings: ["notifications"],
     profile: ["name", "email", "phone", "address", "notifications", "currentPassword"],
@@ -67,6 +68,7 @@
     if (group === "expenses" && role === "director") return ["status"];
     if (operation === "update") {
       if (group === "tickets") return ["status", "reply"];
+      if (group === "messages") return ["status", "reply"];
       if (group === "leave" || group === "documents") return ["status"];
     }
     return operationalFields[group] || LJ.entityConfig?.()[group]?.fields.map((field) => field.name) || [];
@@ -110,6 +112,7 @@
     await request(bootstrap.endpoints.workflow.replace(/ACTION$/, action), { revision, input });
     return true;
   };
+  LJ.changePassword = (payload) => request(bootstrap.endpoints.passwordUpdate, payload);
   LJ.consultation = (fields) => request(bootstrap.endpoints.update, {
     revision,
     workspace: bootstrap.workspace,

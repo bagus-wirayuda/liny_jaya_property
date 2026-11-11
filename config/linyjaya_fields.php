@@ -127,7 +127,7 @@ return [
     ],
     'articles' => [
         'title' => ['required', 'string', 'max:240'],
-        'category' => ['required', 'string', 'max:240', 'in:Panduan membeli,Konstruksi,Inspirasi hunian,Berita perusahaan'],
+        'category' => ['required', 'string', 'max:240', 'in:Panduan Finansial,Panduan membeli,Konstruksi,Inspirasi hunian,Berita perusahaan'],
         'date' => ['required', 'date_format:Y-m-d'],
         'image' => ['required', 'string', 'max:240', 'in:interior,construction,house-1,house-2,house-3'],
         'summary' => ['required', 'string', 'max:3000'],

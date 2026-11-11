@@ -32,15 +32,15 @@
           u ? E(u.stage) : "Belum ada unit",
         ],
       ]) +
-      `<div class="portal-banner"><div><h3>Perjalanan menuju rumah, kini lebih dekat.</h3><p>Pantau pekerjaan dan dokumentasi terbaru dari tim lapangan.</p></div>${A("Lihat progres rumah", "client/progress.html", "primary small", "arrow")}</div>` +
+      `<div class="portal-banner"><div><h3>Perjalanan menuju rumah, kini lebih dekat.</h3><p>Pantau pekerjaan dan dokumentasi terbaru dari tim lapangan.</p></div>${A("Lihat progres rumah", "client/progress", "primary small", "arrow")}</div>` +
       (u
-        ? `<div class="dashboard-grid"><div>${homeSummary(u)}${LJ.panel("Tahapan pembangunan", LJ.timeline(u), A("Detail progres", "client/progress.html", "secondary small"))}</div>${LJ.panel("Pembayaran berikutnya", paymentCards(ps.filter((p) => p.status !== "Terverifikasi" && p.status !== "Dibatalkan").slice(0, 3)), A("Semua tagihan", "client/payments.html", "ghost small"))}</div>`
+        ? `<div class="dashboard-grid"><div>${homeSummary(u)}${LJ.panel("Tahapan pembangunan", LJ.timeline(u), A("Detail progres", "client/progress", "secondary small"))}</div>${LJ.panel("Pembayaran berikutnya", paymentCards(ps.filter((p) => p.status !== "Terverifikasi" && p.status !== "Dibatalkan").slice(0, 3)), A("Semua tagihan", "client/payments", "ghost small"))}</div>`
         : LJ.empty(
             "Cerita rumah Anda dimulai di sini",
             "Pilih proyek dan pesan unit pertama Anda.",
             A(
               "Jelajahi properti",
-              "client/search.html",
+              "client/search",
               "primary",
               "search",
             ),

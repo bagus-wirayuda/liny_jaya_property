@@ -1,4 +1,4 @@
-/* Editorial content and sales advisories for LinyJaya Development. */
+/* Editorial content and dynamic sales advisories for LinyJaya Development. */
 (function () {
   LJ.editorial = {
     status: "Penawaran Resmi & Promo Spesial Berlaku",
@@ -14,6 +14,21 @@
     paymentResult:
       "Catatan pembayaran berhasil diperbarui. Tim keuangan dan legal siap mendampingi proses administrasi Anda.",
   };
-  LJ.publicationNotice = () =>
-    `<div class="publication-note sales-promo-bar">${LJ.icon("spark")}<span><strong>Promo Spesial Hari Ini:</strong> Diskon Cash Keras 5% · Cicilan Bertahap Bunga 0% s.d. 36 Bulan · KPR DP Mulai 10% & Subsidi Biaya KPR s.d. Rp 15 Juta! Hubungi tim sales untuk simulasi unit Anda.</span></div>`;
+
+  LJ.publicationNotice = (projectId) => {
+    const activePromos = (LJ.db?.promos || []).filter(
+      (promo) => !projectId || promo.project === projectId,
+    );
+    const promos = activePromos.length ? activePromos : (LJ.db?.promos || []);
+    if (!promos.length) {
+      return `<div class="publication-note sales-promo-bar">${LJ.icon("spark")}<span><strong>Konsultasi Cara Bayar:</strong> Pilihan Cash Keras, Cash Bertahap, dan KPR Bank tersedia bersama Property Advisor LinyJaya.</span></div>`;
+    }
+    const summary = promos
+      .map((p) => {
+        const snippet = (p.description || "").split(".")[0]?.trim();
+        return snippet ? `${LJ.esc(p.name)} (${LJ.esc(snippet)})` : LJ.esc(p.name);
+      })
+      .join(" · ");
+    return `<div class="publication-note sales-promo-bar">${LJ.icon("spark")}<span><strong>Promo Aktif:</strong> ${summary}. Hubungi tim sales untuk simulasi unit Anda.</span></div>`;
+  };
 })();

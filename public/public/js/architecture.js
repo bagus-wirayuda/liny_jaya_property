@@ -190,95 +190,114 @@
     };
   }
 
+  const compactViewport = matchMedia("(max-width: 950px)");
   let mounted;
   LJ.mountArchitecture = () => {
     const figure = document.querySelector(".architecture");
-    if (!figure || figure === mounted) return;
+    if (!figure || compactViewport.matches || figure === mounted) return;
     if (mounted) {
       figure.replaceWith(mounted);
       return;
     }
     mounted = figure;
-    const canvas = figure.querySelector("canvas");
-    const gl = canvas.getContext("webgl", { alpha: true, antialias: true });
-    const render = gl && createRenderer(gl);
-    if (!render) return;
+    function initializeModel() {
+      const canvas = figure.querySelector("canvas");
+      const gl = canvas.getContext("webgl", { alpha: true, antialias: true });
+      const render = gl && createRenderer(gl);
+      if (!render) return;
 
-    const photo = figure.querySelector(".architecture-photo");
-    const help = figure.querySelector("#architecture-help");
-    const controls = figure.querySelector(".architecture-controls");
-    const light = controls.querySelector(".architecture-light");
-    const motion = matchMedia("(prefers-reduced-motion: reduce)");
-    canvas.hidden = false;
-    photo.hidden = true;
-    controls.hidden = false;
-    help.textContent = "Geser atau gunakan tombol panah";
+      const photo = figure.querySelector(".architecture-photo");
+      const help = figure.querySelector("#architecture-help");
+      const controls = figure.querySelector(".architecture-controls");
+      const light = controls.querySelector(".architecture-light");
+      const motion = matchMedia("(prefers-reduced-motion: reduce)");
+      canvas.hidden = false;
+      photo.hidden = true;
+      controls.hidden = false;
+      help.textContent = "Geser atau gunakan tombol panah";
 
-    let angle = motion.matches ? 0.54 : 0.10;
-    let targetAngle = 0.54;
-    let pitch = 0.45, targetPitch = pitch;
-    let lighting = 0, targetLight = 0;
-    let pointer, frame;
-    function paint() {
-      frame = null;
-      const speed = motion.matches ? 1 : 0.17;
-      angle += (targetAngle - angle) * speed;
-      pitch += (targetPitch - pitch) * speed;
-      lighting += (targetLight - lighting) * speed;
-      const ratio = Math.min(devicePixelRatio, 2);
-      const width = Math.round(canvas.clientWidth * ratio);
-      const height = Math.round(canvas.clientHeight * ratio);
-      if (!width || !height) return;
-      if (canvas.width !== width || canvas.height !== height) {
-        canvas.width = width;
-        canvas.height = height;
+      let angle = motion.matches ? 0.54 : 0.10;
+      let targetAngle = 0.54;
+      let pitch = 0.45, targetPitch = pitch;
+      let lighting = 0, targetLight = 0;
+      let pointer, frame;
+      function paint() {
+        frame = null;
+        if (compactViewport.matches) return;
+        const speed = motion.matches ? 1 : 0.17;
+        angle += (targetAngle - angle) * speed;
+        pitch += (targetPitch - pitch) * speed;
+        lighting += (targetLight - lighting) * speed;
+        const ratio = Math.min(devicePixelRatio, matchMedia("(max-width: 950px)").matches ? 1.25 : 2);
+        const width = Math.round(canvas.clientWidth * ratio);
+        const height = Math.round(canvas.clientHeight * ratio);
+        if (!width || !height) return;
+        if (canvas.width !== width || canvas.height !== height) {
+          canvas.width = width;
+          canvas.height = height;
+        }
+        render(width, height, angle, pitch, lighting);
+        if (Math.abs(targetAngle - angle) + Math.abs(targetPitch - pitch) + Math.abs(targetLight - lighting) > 0.002)
+          requestPaint();
       }
-      render(width, height, angle, pitch, lighting);
-      if (Math.abs(targetAngle - angle) + Math.abs(targetPitch - pitch) + Math.abs(targetLight - lighting) > 0.002)
+      function requestPaint() {
+        if (frame == null) frame = requestAnimationFrame(paint);
+      }
+      function turn(direction) {
+        targetAngle += direction * Math.PI / 5;
         requestPaint();
-    }
-    function requestPaint() {
-      if (frame == null) frame = requestAnimationFrame(paint);
-    }
-    function turn(direction) {
-      targetAngle += direction * Math.PI / 5;
+      }
+      for (const button of controls.querySelectorAll("[data-model-turn]")) {
+        button.addEventListener("click", () => turn(Number(button.dataset.modelTurn)));
+      }
+      light.addEventListener("click", () => {
+        targetLight = 1 - targetLight;
+        light.setAttribute("aria-pressed", String(targetLight === 1));
+        figure.classList.toggle("architecture--dusk", targetLight === 1);
+        requestPaint();
+      });
+      canvas.addEventListener("keydown", (event) => {
+        if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+        event.preventDefault();
+        turn(event.key === "ArrowLeft" ? -1 : 1);
+      });
+      canvas.addEventListener("pointerdown", (event) => {
+        if (!event.isPrimary || event.button !== 0) return;
+        pointer = event;
+        canvas.setPointerCapture(event.pointerId);
+      });
+      canvas.addEventListener("pointermove", (event) => {
+        if (!pointer || pointer.pointerId !== event.pointerId) return;
+        targetAngle += (event.clientX - pointer.clientX) * 0.012;
+        targetPitch = Math.max(0.19, Math.min(0.85, targetPitch + (event.clientY - pointer.clientY) * 0.007));
+        pointer = event;
+        requestPaint();
+      });
+      canvas.addEventListener("lostpointercapture", () => { pointer = null; });
+      canvas.addEventListener("webglcontextlost", (event) => {
+        event.preventDefault();
+        canvas.hidden = true;
+        photo.hidden = false;
+        controls.hidden = true;
+        help.textContent = "Visual konsep arsitektur";
+      });
+      new ResizeObserver(requestPaint).observe(canvas);
       requestPaint();
     }
-    for (const button of controls.querySelectorAll("[data-model-turn]")) {
-      button.addEventListener("click", () => turn(Number(button.dataset.modelTurn)));
+    if (navigator.connection?.saveData) {
+      const activate = document.createElement("button");
+      activate.type = "button";
+      activate.className = "btn architecture-activate";
+      activate.textContent = "Jelajahi model 3D";
+      activate.addEventListener("click", () => {
+        activate.remove();
+        initializeModel();
+        figure.querySelector("canvas:not([hidden])")?.focus({ preventScroll: true });
+      }, { once: true });
+      figure.querySelector(".architecture-stage").append(activate);
+    } else {
+      initializeModel();
     }
-    light.addEventListener("click", () => {
-      targetLight = 1 - targetLight;
-      light.setAttribute("aria-pressed", String(targetLight === 1));
-      figure.classList.toggle("architecture--dusk", targetLight === 1);
-      requestPaint();
-    });
-    canvas.addEventListener("keydown", (event) => {
-      if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
-      event.preventDefault();
-      turn(event.key === "ArrowLeft" ? -1 : 1);
-    });
-    canvas.addEventListener("pointerdown", (event) => {
-      if (!event.isPrimary || event.button !== 0) return;
-      pointer = event;
-      canvas.setPointerCapture(event.pointerId);
-    });
-    canvas.addEventListener("pointermove", (event) => {
-      if (!pointer || pointer.pointerId !== event.pointerId) return;
-      targetAngle += (event.clientX - pointer.clientX) * 0.012;
-      targetPitch = Math.max(0.19, Math.min(0.85, targetPitch + (event.clientY - pointer.clientY) * 0.007));
-      pointer = event;
-      requestPaint();
-    });
-    canvas.addEventListener("lostpointercapture", () => { pointer = null; });
-    canvas.addEventListener("webglcontextlost", (event) => {
-      event.preventDefault();
-      canvas.hidden = true;
-      photo.hidden = false;
-      controls.hidden = true;
-      help.textContent = "Visual konsep arsitektur";
-    });
-    new ResizeObserver(requestPaint).observe(canvas);
-    requestPaint();
   };
+  compactViewport.addEventListener("change", () => LJ.mountArchitecture());
 })();

@@ -23,7 +23,7 @@
       LJ.panel(
         "Pemesanan " + (t === "history" ? "sebelumnya" : "unit"),
         bookingTable(bs, role),
-        A("Lihat pilihan unit", "admin/units.html", "primary small", "plus"),
+        A("Lihat pilihan unit", "admin/units", "primary small", "plus"),
         "Tinjau unit sebelum menyusun catatan pemesanan pada ruang kerja klien.",
       )
     );

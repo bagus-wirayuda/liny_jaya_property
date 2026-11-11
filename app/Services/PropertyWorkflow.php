@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\PropertyAttachment;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -120,7 +121,7 @@ class PropertyWorkflow
         $payment = $this->records->data('payments', $this->records->row('payments', $id));
         $this->assert($payment['status'] === 'Menunggu verifikasi', 'Pembayaran sudah diproses atau belum diajukan.');
         if ($approved) {
-            $this->assert(DB::table('property_attachments')->where([
+            $this->assert(PropertyAttachment::query()->where([
                 'resource' => 'payments', 'record_id' => $id, 'field' => 'proofData',
             ])->exists(), 'Bukti pembayaran belum tersedia untuk diverifikasi.');
         }
@@ -175,7 +176,8 @@ class PropertyWorkflow
     {
         $unit = $this->records->data('units', $this->records->row('units', $id));
         $this->assert($unit['progress'] === 100 && $unit['construction'] === 'Selesai', 'Pembangunan harus selesai 100%.');
-        $row = $this->records->query('bookings')->where('reserved_unit', $id)->first() ?? abort(404);
+        $row = $this->records->query('bookings')->where('reserved_unit', $id)->first();
+        $this->assert((bool) $row, 'Unit belum memiliki pemesanan aktif untuk serah terima.');
         $booking = $this->records->data('bookings', $row);
         $paid = $this->records->query('payments')->where('booking_id', $row->id)->where('payload->status', 'Terverifikasi')->get()
             ->sum(fn ($item) => $this->records->data('payments', $item)['amount']);

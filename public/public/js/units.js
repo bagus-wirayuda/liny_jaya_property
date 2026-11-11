@@ -303,7 +303,7 @@
               <li><strong>Booking Fee & Penyiapan Berkas:</strong> Amankan unit pilihan Anda dengan Booking Fee Rp 10 Juta dan kami bantu seluruh proses administrasi.</li>
               <li><strong>Akad / AJB & Serah Terima Kunci:</strong> Penandatanganan dokumen legal resmi dan pemantauan progres pembangunan hingga serah terima unit.</li>
             </ol>
-            ${!role ? `<a class="text-link" href="faq.html">Pelajari selengkapnya di Pertanyaan Umum ${I("arrow", "sm")}</a>` : ""}`
+            ${!role ? `<a class="text-link" href="faq">Pelajari selengkapnya di Pertanyaan Umum ${I("arrow", "sm")}</a>` : ""}`
           )}
         </div>
 

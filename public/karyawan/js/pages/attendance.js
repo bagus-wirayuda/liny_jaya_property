@@ -14,6 +14,7 @@
           ["attendance", "Kehadiran"],
           ["schedule", "Jadwal kerja"],
           ["leave", "Izin & cuti"],
+          ["evaluations", "Evaluasi saya"],
         ],
         t,
       ) +
@@ -22,6 +23,24 @@
             "Jadwal kerja Anda",
             `<div class="notice">${I("calendar")}Rencana kegiatan tercantum pada daftar penugasan. Jam kerja dan perubahan jadwal perlu dikonfirmasi oleh penanggung jawab proyek.</div>${mytasks.map((task) => `<div class="schedule-row"><div class="schedule-date">${new Date(task.deadline + "T12:00:00").getDate()}<small>${new Date(task.deadline + "T12:00:00").toLocaleString("id-ID", { month: "short" })}</small></div><div><h4>${E(task.title)}</h4><p>${LJ.unitLabel(task.unit)} · ${E(task.status)}</p></div></div>`).join("")}`,
           )
+        : t === "evaluations"
+          ? LJ.panel(
+              "Evaluasi kinerja Anda",
+              (d.evaluations || []).length
+                ? LJ.table(
+                    ["Periode", "Nilai", "Catatan"],
+                    (d.evaluations || []).map((e) => [
+                      E(e.period),
+                      `<strong>${e.score}/100</strong>`,
+                      E(e.notes),
+                    ]),
+                  )
+                : LJ.empty(
+                    "award",
+                    "Belum ada evaluasi kinerja",
+                    "Catatan evaluasi dari manajemen akan tampil di sini.",
+                  ),
+            )
         : t === "leave"
           ? LJ.panel(
               "Pengajuan izin & cuti",

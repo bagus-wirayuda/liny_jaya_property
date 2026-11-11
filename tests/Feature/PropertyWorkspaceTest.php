@@ -22,7 +22,7 @@ class PropertyWorkspaceTest extends TestCase
 
     public function test_guest_login_routes_each_role_and_enforces_access(): void
     {
-        $this->get('/client/bookings.html')->assertRedirect('/login');
+        $this->get('/client/bookings')->assertRedirect('/login');
         $this->getJson('/api/property/data?workspace=1')->assertUnauthorized();
         $this->getJson('/api/property/data')->assertOk()
             ->assertJsonCount(0, 'data.bookings')->assertJsonCount(0, 'data.accounts');
@@ -35,30 +35,29 @@ class PropertyWorkspaceTest extends TestCase
         $this->post('/login', ['email' => $client->email, 'password' => 'LoginExample!42'])
             ->assertRedirect();
         $this->assertAuthenticatedAs($client);
-        $this->get('/dashboard')->assertRedirect('/client/index.html');
-        $this->get('/client/bookings.html')->assertOk();
-        $this->get('/admin/index.html')->assertForbidden();
-        $this->get('/unit.html?id=U1&workspace=admin')->assertForbidden();
+        $this->get('/dashboard')->assertRedirect('/client');
+        $this->get('/client/bookings')->assertOk();
+        $this->get('/admin')->assertForbidden();
+        $this->get('/unit?id=U1&workspace=admin')->assertForbidden();
         $this->post('/logout')->assertRedirect('/login');
         $this->assertGuest();
         $this->actingAs($this->user('employee'));
-        $this->get('/unit.html?id=U1&workspace=karyawan')->assertOk();
-        $this->get('/unit.html?id=U2&workspace=karyawan')->assertNotFound();
-        $this->get('/pimpinan/index.html')->assertForbidden();
+        $this->get('/unit?id=U1&workspace=karyawan')->assertOk();
+        $this->get('/unit?id=U2&workspace=karyawan')->assertNotFound();
+        $this->get('/pimpinan')->assertForbidden();
     }
 
     public function test_all_mapped_pages_open_in_their_authorized_workspace(): void
     {
-        foreach (config('linyjaya_pages') as $file => $page) {
-            if ($file === 'client/bantuan-akses.html') {
-                $this->get('/'.$file)->assertRedirect('/forgot-password');
+        $this->get('/client/bantuan-akses.html')->assertRedirect('/forgot-password');
 
-                continue;
-            }
+        foreach (config('linyjaya_pages') as $page) {
             if (isset($page['role'])) {
                 $this->actingAs($this->user($page['role']));
+            } else {
+                $this->post('/logout');
             }
-            $this->get('/'.$file)->assertOk()->assertSee('css/style.css');
+            $this->get('/'.$page['uri'])->assertOk()->assertSee('css/style.css');
         }
     }
 

@@ -6,7 +6,7 @@
     return LJ.panel(
       "Riwayat pemesanan Anda",
       bookingTable(bs, "client"),
-      A("Cari unit lain", "client/search.html", "primary small", "plus"),
+      A("Cari unit lain", "client/search", "primary small", "plus"),
     );
   };
 })();

@@ -164,7 +164,8 @@
           timeZone: "Asia/Singapore",
         })
       : "—";
-  LJ.image = (name) => "assets/images/" + name + ".jpg";
+  LJ.image = (name) => "assets/images/" + name +
+    (matchMedia("(max-width: 950px)").matches ? "-mobile.webp" : ".jpg");
   LJ.calcKPR = (price, years = 20, dpPercent = 10, annualRate = 0.05) => {
     const dp = price * (dpPercent / 100);
     const principal = price - dp;
@@ -240,7 +241,7 @@
     const phone = (LJ.db?.company?.whatsapp || "6281234567890").replace(/\D/g, "");
     return "https://wa.me/" + phone + "?text=" + encodeURIComponent(message || "Halo Tim Sales LinyJaya Development, saya ingin konsultasi mengenai hunian.");
   };
-  LJ.brand = (path = LJ.currentPage.role ? LJ.rolePage(LJ.currentPage.role) : "index.html") =>
+  LJ.brand = (path = LJ.currentPage.role ? LJ.rolePage(LJ.currentPage.role) : "./") =>
     `<a class="brand" href="${path}" aria-label="LinyJaya Development — Beranda">${LJ.db.company.logoData ? `<img src="${LJ.db.company.logoData}" alt="Logo LinyJaya"><span><strong>LinyJaya</strong><small>DEVELOPMENT</small></span>` : '<img class="brand-lockup brand-lockup--light" src="assets/brand/linyjaya-logo.svg" alt="LinyJaya Development"><img class="brand-lockup brand-lockup--dark" src="assets/brand/linyjaya-logo-dark.svg" alt="LinyJaya Development">'}</a>`;
   LJ.btn = (text, action = "", id = "", style = "primary", icon = "") =>
     `<button type="button" class="btn ${style}" ${action ? `data-action="${action}" data-id="${LJ.esc(id)}"` : ""}>${icon ? LJ.icon(icon) : ""}${text}</button>`;
@@ -293,7 +294,7 @@
     `<section class="panel"><div class="panel-head"><div><h3>${title}</h3>${desc ? `<p>${desc}</p>` : ""}</div>${action}</div>${body}</section>`;
   LJ.table = (headers, rows) =>
     rows.length
-      ? `<div class="table-wrap"><table class="data-table"><thead><tr>${headers.map((h) => `<th scope="col">${h}</th>`).join("")}</tr></thead><tbody>${rows.map((cells) => `<tr>${cells.map((c) => `<td>${c}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`
+      ? `<div class="table-wrap" tabindex="0" role="region" aria-label="Tabel data, geser untuk melihat kolom lainnya"><table class="data-table"><thead><tr>${headers.map((h) => `<th scope="col">${h}</th>`).join("")}</tr></thead><tbody>${rows.map((cells) => `<tr>${cells.map((c) => `<td>${c}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`
       : LJ.empty(
           "Tidak ada hasil",
           "Coba ubah pencarian atau tambahkan data baru.",

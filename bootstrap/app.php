@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureWorkspaceRole;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -12,8 +13,17 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->alias([
+            'role' => EnsureWorkspaceRole::class,
+        ]);
         $middleware->redirectUsersTo('/dashboard');
-        $middleware->trimStrings(except: ['changes.*.fields.password', 'changes.*.fields.currentPassword']);
+        $middleware->trimStrings(except: [
+            'password',
+            'password_confirmation',
+            'current_password',
+            'changes.*.fields.password',
+            'changes.*.fields.currentPassword',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

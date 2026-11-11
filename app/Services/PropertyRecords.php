@@ -2,12 +2,39 @@
 
 namespace App\Services;
 
+use App\Models\Announcement;
+use App\Models\Article;
+use App\Models\Attendance;
+use App\Models\Booking;
+use App\Models\Communication;
+use App\Models\Document;
+use App\Models\Employee;
+use App\Models\Evaluation;
+use App\Models\Expense;
+use App\Models\Lead;
+use App\Models\LeaveRequest;
+use App\Models\Message;
+use App\Models\Offer;
+use App\Models\Partner;
+use App\Models\Payment;
+use App\Models\Project;
+use App\Models\Promo;
+use App\Models\PropertyAttachment;
+use App\Models\PropertyAudit;
+use App\Models\PropertyFavorite;
+use App\Models\PropertyNotification;
+use App\Models\Report;
+use App\Models\Schedule;
+use App\Models\Service;
+use App\Models\Task;
+use App\Models\Ticket;
+use App\Models\Unit;
 use App\Models\User;
-use Illuminate\Database\Query\Builder;
-use Illuminate\Support\Facades\DB;
+use App\Models\WorkspaceModel;
+use App\Models\WorkspaceSetting;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
-use stdClass;
 
 class PropertyRecords
 {
@@ -18,25 +45,36 @@ class PropertyRecords
         'communications', 'schedules', 'messages', 'notifications', 'evaluations',
     ];
 
-    private const TABLES = [
-        'audit' => 'property_audits',
-        'leave' => 'leave_requests',
-        'notifications' => 'property_notifications',
-        'settings' => 'workspace_settings',
-    ];
-
-    private const LINKS = [
-        'units' => ['project' => 'project_id'],
-        'leads' => ['project' => 'project_id', 'unit' => 'unit_id'],
-        'expenses' => ['project' => 'project_id'],
-        'promos' => ['project' => 'project_id'],
-        'bookings' => ['unit' => 'unit_id'],
-        'tasks' => ['unit' => 'unit_id'],
-        'reports' => ['unit' => 'unit_id'],
-        'offers' => ['unit' => 'unit_id'],
-        'schedules' => ['unit' => 'unit_id'],
-        'payments' => ['booking' => 'booking_id'],
-        'documents' => ['booking' => 'booking_id'],
+    /**
+     * @var array<string, class-string<WorkspaceModel>>
+     */
+    public const MODELS = [
+        'projects' => Project::class,
+        'units' => Unit::class,
+        'bookings' => Booking::class,
+        'payments' => Payment::class,
+        'tasks' => Task::class,
+        'reports' => Report::class,
+        'leads' => Lead::class,
+        'employees' => Employee::class,
+        'expenses' => Expense::class,
+        'tickets' => Ticket::class,
+        'announcements' => Announcement::class,
+        'attendance' => Attendance::class,
+        'leave' => LeaveRequest::class,
+        'documents' => Document::class,
+        'services' => Service::class,
+        'partners' => Partner::class,
+        'articles' => Article::class,
+        'audit' => PropertyAudit::class,
+        'offers' => Offer::class,
+        'promos' => Promo::class,
+        'communications' => Communication::class,
+        'schedules' => Schedule::class,
+        'messages' => Message::class,
+        'notifications' => PropertyNotification::class,
+        'evaluations' => Evaluation::class,
+        'settings' => WorkspaceSetting::class,
     ];
 
     private const FILES = [
@@ -53,28 +91,56 @@ class PropertyRecords
         'director' => 'Pimpinan',
     ];
 
+    /**
+     * Resolve the Eloquent model class for a workspace resource group.
+     *
+     * @return class-string<WorkspaceModel>
+     */
+    public function modelClass(string $group): string
+    {
+        return self::MODELS[$group] ?? abort(404);
+    }
+
+    /**
+     * Start a new Eloquent query builder for the resource group.
+     *
+     * @return Builder<WorkspaceModel>
+     */
     public function query(string $group): Builder
     {
         abort_unless(in_array($group, self::GROUPS, true) || $group === 'settings', 404);
+        $modelClass = $this->modelClass($group);
 
-        return DB::table(self::TABLES[$group] ?? $group);
+        return $modelClass::query();
     }
 
-    public function row(string $group, string $id): stdClass
+    public function row(string $group, string $id): WorkspaceModel
     {
         return $this->query($group)->where('id', $id)->first() ?? abort(404);
     }
 
-    public function data(string $group, stdClass $row): array
+    /**
+     * Flatten a model row into the workspace JSON record format.
+     *
+     * @return array<string, mixed>
+     */
+    public function data(string $group, WorkspaceModel $row): array
     {
-        $data = json_decode($row->payload, true, 512, JSON_THROW_ON_ERROR);
-        foreach (self::LINKS[$group] ?? [] as $field => $column) {
+        $data = is_array($row->payload) ? $row->payload : [];
+        $modelClass = $this->modelClass($group);
+        foreach ($modelClass::payloadLinks() as $field => $column) {
             $data[$field] = $row->{$column} ?? '';
         }
 
         return ['id' => $row->id, ...$data];
     }
 
+    /**
+     * Create or update a workspace record along with relational columns and attachments.
+     *
+     * @param  array<string, mixed>  $record
+     * @param  array<string, mixed>  $columns
+     */
     public function put(string $group, string $id, array $record, array $columns = []): void
     {
         unset($record['id']);
@@ -85,7 +151,8 @@ class PropertyRecords
             }
             unset($record[$field]);
         }
-        foreach (self::LINKS[$group] ?? [] as $key => $column) {
+        $modelClass = $this->modelClass($group);
+        foreach ($modelClass::payloadLinks() as $key => $column) {
             $columns[$column] = ($record[$key] ?? '') !== '' ? $record[$key] : null;
             unset($record[$key]);
         }
@@ -99,20 +166,19 @@ class PropertyRecords
         if ($group === 'attendance') {
             $columns['work_date'] = $record['date'];
         }
-        $this->query($group)->updateOrInsert(['id' => $id], fn (bool $exists): array => [
-            ...$columns,
-            'payload' => json_encode($record, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR),
-            'updated_at' => now(),
-            ...($exists ? [] : ['created_at' => now()]),
-        ]);
+
+        /** @var WorkspaceModel $model */
+        $model = $modelClass::query()->find($id) ?? new $modelClass(['id' => $id]);
+        $model->fill([...$columns, 'payload' => $record]);
+        $model->save();
     }
 
     public function delete(string $group, string $id): void
     {
         $this->query($group)->where('id', $id)->delete();
-        DB::table('property_attachments')->where('resource', $group)->where('record_id', $id)->delete();
+        PropertyAttachment::query()->where('resource', $group)->where('record_id', $id)->delete();
         if (in_array($group, ['projects', 'units'], true)) {
-            DB::table('property_favorites')->where('property_id', $id)->delete();
+            PropertyFavorite::query()->where('property_id', $id)->delete();
         }
     }
 
@@ -129,7 +195,9 @@ class PropertyRecords
     public function notify(string $audience, string $title, string $message, ?int $client = null, ?string $employee = null): void
     {
         $this->put('notifications', $this->identifier('NT'), [
-            'title' => $title, 'message' => $message, 'date' => $this->today(),
+            'title' => $title,
+            'message' => $message,
+            'date' => $this->today(),
         ], ['audience' => $audience, 'client_id' => $client, 'employee_id' => $employee]);
     }
 
@@ -159,9 +227,17 @@ class PropertyRecords
                 throw ValidationException::withMessages([$field => 'Dimensi gambar tidak dapat digunakan.']);
             }
         }
-        DB::table('property_attachments')->updateOrInsert(
-            ['resource' => $group, 'record_id' => $id, 'field' => $field],
-            ['id' => (string) Str::uuid(), 'mime' => $mime, 'content' => $parts[2]],
-        );
+
+        $attachment = PropertyAttachment::query()->firstOrNew([
+            'resource' => $group,
+            'record_id' => $id,
+            'field' => $field,
+        ]);
+        $attachment->fill([
+            'id' => (string) Str::uuid(),
+            'mime' => $mime,
+            'content' => $parts[2],
+        ]);
+        $attachment->save();
     }
 }

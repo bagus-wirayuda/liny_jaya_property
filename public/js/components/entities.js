@@ -447,10 +447,10 @@
         field("subject", "Subjek"),
         field("message", "Pesan", "textarea", [], { wide: true }),
       ],
-      headers: ["Pengirim", "Subjek", "Tanggal", "Status"],
+      headers: ["Pengirim", "Subjek & tanggapan", "Tanggal", "Status"],
       cells: (m) => [
-        E(m.name),
-        `<strong>${E(m.subject)}</strong><small>${E(m.message.slice(0, 100))}</small>`,
+        `<strong>${E(m.name)}</strong>${m.senderRole ? `<small>${E(m.senderRole)}</small>` : ""}`,
+        `<strong>${E(m.subject)}</strong><small>${E(m.message.slice(0, 100))}</small>${m.reply ? `<small class="muted">Tanggapan: ${E(m.reply)}</small>` : ""}`,
         LJ.date(m.date),
         LJ.badge(m.status),
       ],
@@ -487,6 +487,7 @@
       fields: [
         field("title", "Judul"),
         field("category", "Kategori", "select", [
+          "Panduan Finansial",
           "Panduan membeli",
           "Konstruksi",
           "Inspirasi hunian",

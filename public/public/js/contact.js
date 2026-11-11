@@ -54,9 +54,9 @@
             <div class="contact-map" aria-label="Lokasi Sales Gallery LinyJaya">
               <div class="map-pin">
                 ${I("pin", "lg")}
-                <strong>Sales Gallery LinyJaya</strong>
-                <p>Bandung Selatan · Jawa Barat</p>
-                <small class="muted">Show Unit Siap Dikunjungi Setiap Hari</small>
+                <strong>Sales Gallery ${LJ.esc(LJ.db.company.name || "LinyJaya")}</strong>
+                <p>${LJ.esc(LJ.db.company.address || "Bandung Selatan · Jawa Barat")}</p>
+                <small class="muted">${LJ.esc(LJ.db.company.hours || "Show Unit Siap Dikunjungi Setiap Hari")}</small>
               </div>
             </div>
           </div>

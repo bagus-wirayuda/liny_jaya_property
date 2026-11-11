@@ -118,11 +118,11 @@
             "Identitas badan hukum, kontak layanan, biaya, mekanisme pengaduan dan penyelesaian perbedaan, serta tanggal berlaku perlu dilengkapi dan disahkan sebelum ketentuan ini diberlakukan.",
           ],
         ];
-    return `<div class="legal-status">${LJ.icon("file")}<div><strong>${LJ.editorial.status}</strong><p>Identitas, kontak resmi, dan ketentuan yang mengikat belum disahkan. Bagian bertanda perlu dilengkapi sebelum naskah diberlakukan.</p></div></div><div class="legal-sections">${sections.map(([heading, body], i) => `<section><h2><span>${String(i + 1).padStart(2, "0")}</span>${heading}</h2><p>${body}</p></section>`).join("")}</div><div class="legal-related"><a href="faq.html">Pertanyaan umum ${LJ.icon("arrow", "sm")}</a><a href="${privacy ? "syarat-ketentuan.html" : "kebijakan-privasi.html"}">${privacy ? "Syarat & Ketentuan" : "Kebijakan Privasi"} ${LJ.icon("arrow", "sm")}</a></div>`;
+    return `<div class="legal-status">${LJ.icon("file")}<div><strong>${LJ.editorial.status}</strong><p>Identitas, kontak resmi, dan ketentuan yang mengikat belum disahkan. Bagian bertanda perlu dilengkapi sebelum naskah diberlakukan.</p></div></div><div class="legal-sections">${sections.map(([heading, body], i) => `<section><h2><span>${String(i + 1).padStart(2, "0")}</span>${heading}</h2><p>${body}</p></section>`).join("")}</div><div class="legal-related"><a href="faq">Pertanyaan umum ${LJ.icon("arrow", "sm")}</a><a href="${privacy ? "syarat-ketentuan" : "kebijakan-privasi"}">${privacy ? "Syarat & Ketentuan" : "Kebijakan Privasi"} ${LJ.icon("arrow", "sm")}</a></div>`;
   };
   LJ.informationPage = (path) => {
-    const faq = path === "faq.html";
-    const privacy = path === "kebijakan-privasi.html";
+    const faq = path === "faq" || path === "faq.html";
+    const privacy = path === "kebijakan-privasi" || path === "kebijakan-privasi.html";
     const title = faq
       ? "Pertanyaan Umum"
       : privacy
@@ -137,9 +137,9 @@
           : "Informasi untuk memahami hak, tanggung jawab, dan hal-hal yang perlu dipastikan sebelum melanjutkan proses kepemilikan rumah.",
       ) +
       `<div class="container page-body"><div class="legal-layout"><aside class="legal-nav" aria-label="Informasi pelanggan">${[
-        ["kebijakan-privasi.html", "Kebijakan Privasi"],
-        ["syarat-ketentuan.html", "Syarat & Ketentuan"],
-        ["faq.html", "Pertanyaan Umum"],
+        ["kebijakan-privasi", "Kebijakan Privasi"],
+        ["syarat-ketentuan", "Syarat & Ketentuan"],
+        ["faq", "Pertanyaan Umum"],
       ]
         .map(
           ([url, label]) =>

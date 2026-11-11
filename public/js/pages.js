@@ -1,5 +1,5 @@
 (function () {
-  const { page, role, menu, resource } = document.body.dataset;
+  const { page, role, menu, resource, pageKey, recordId } = document.body.dataset;
   const params = new URLSearchParams(location.search);
   const workspace = ["projects", "units"].includes(resource)
     ? Object.keys(LJ.roles).find(
@@ -7,12 +7,16 @@
       )
     : undefined;
 
-  LJ.rolePage = (role, menu = "overview") =>
-    LJ.roles[role].folder + "/" + (menu === "overview" ? "index" : menu) + ".html";
-  LJ.propertyPage = (resource, id, role) => {
-    const query = new URLSearchParams({ id });
-    if (LJ.roles[role]) query.set("workspace", LJ.roles[role].folder);
-    return (resource === "projects" ? "proyek.html" : "unit.html") + "?" + query;
+  LJ.rolePage = (roleName, menuName = "overview") =>
+    LJ.roles[roleName].folder + (menuName === "overview" ? "" : "/" + menuName);
+
+  LJ.propertyPage = (res, id, roleName) => {
+    const base = res === "projects" ? "proyek" : "unit";
+    if (LJ.roles[roleName]) {
+      const query = new URLSearchParams({ id, workspace: LJ.roles[roleName].folder });
+      return `${base}?${query}`;
+    }
+    return `${base}/${encodeURIComponent(id)}`;
   };
 
   LJ.pages = {
@@ -23,9 +27,16 @@
     director: {},
     shared: {},
   };
+
+  const resolvedKey =
+    pageKey ||
+    LJ.bootstrap?.pageKey ||
+    (location.pathname.replace(/^\//, "") || "home").replace(/\.html$/, "");
+
   LJ.currentPage = {
     page: workspace ? "property-detail" : page,
-    file: location.pathname.split("/").pop() || "index.html",
+    file: resolvedKey,
+    pageKey: resolvedKey,
     role: workspace || role,
     menu:
       menu ||
@@ -35,7 +46,9 @@
           ? "units"
           : "projects"),
     resource,
-    id: resource ? params.get("id") || LJ.db[resource][0]?.id : undefined,
+    id: resource
+      ? recordId || LJ.bootstrap?.recordId || params.get("id") || LJ.db[resource][0]?.id
+      : undefined,
     params,
   };
 })();

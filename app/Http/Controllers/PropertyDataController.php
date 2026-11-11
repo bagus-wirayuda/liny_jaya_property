@@ -2,6 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Property\ToggleFavoriteRequest;
+use App\Http\Requests\Property\UpdateChangesRequest;
+use App\Http\Requests\Property\WorkflowActionRequest;
+use App\Models\PropertyAttachment;
+use App\Models\PropertyFavorite;
+use App\Models\PropertyRevision;
 use App\Models\User;
 use App\Services\PropertyChanges;
 use App\Services\PropertyRecords;
@@ -12,7 +18,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class PropertyDataController extends Controller
@@ -34,18 +39,10 @@ class PropertyDataController extends Controller
             ->header('Cache-Control', 'private, no-store');
     }
 
-    public function update(Request $request): JsonResponse
+    public function update(UpdateChangesRequest $request): JsonResponse
     {
         $user = $this->activeUser($request);
-        $data = $request->validate([
-            'workspace' => ['required', 'boolean'], 'revision' => ['required', 'integer', 'min:0'],
-            'changes' => ['required', 'array', 'min:1', 'max:30'],
-            'changes.*' => ['required', 'array:resource,id,operation,fields'],
-            'changes.*.resource' => ['required', Rule::in([...PropertyRecords::GROUPS, 'company', 'settings', 'profile', 'accounts'])],
-            'changes.*.id' => ['required', 'string', 'regex:/\A[\w-]{1,64}\z/'],
-            'changes.*.operation' => ['required', 'in:create,update,delete'],
-            'changes.*.fields' => ['sometimes', 'array', 'max:32'],
-        ]);
+        $data = $request->validated();
         $workspace = (bool) $data['workspace'];
         abort_if($workspace && ! $user, 401);
         if (! $workspace) {
@@ -65,34 +62,37 @@ class PropertyDataController extends Controller
         });
     }
 
-    public function workflow(Request $request, string $action): JsonResponse
+    public function workflow(WorkflowActionRequest $request, string $action): JsonResponse
     {
         $user = $this->activeUser($request);
         abort_unless($user, 401);
-        $data = $request->validate([
-            'revision' => ['required', 'integer', 'min:0'],
-            'input' => ['present', 'array', 'max:8'],
-        ]);
+        $data = $request->validated();
 
-        return $this->mutate($request, $user, true, (int) $data['revision'], fn () => $this->workflow->run($user, $action, $data['input']));
+        return $this->mutate(
+            $request,
+            $user,
+            true,
+            (int) $data['revision'],
+            fn () => $this->workflow->run($user, $action, $data['input']),
+        );
     }
 
-    public function favorite(Request $request): JsonResponse
+    public function favorite(ToggleFavoriteRequest $request): JsonResponse
     {
         $user = $this->activeUser($request);
-        $data = $request->validate([
-            'id' => ['required', 'string', 'regex:/\A[\w-]{1,64}\z/'],
-            'selected' => ['required', 'boolean'],
-        ]);
+        $data = $request->validated();
         $id = $data['id'];
-        abort_unless($this->records->query('projects')->where('id', $id)->exists()
-            || $this->records->query('units')->where('id', $id)->exists(), 404);
+        abort_unless(
+            $this->records->query('projects')->where('id', $id)->exists()
+                || $this->records->query('units')->where('id', $id)->exists(),
+            404,
+        );
+
         if ($user) {
-            $key = ['user_id' => $user->id, 'property_id' => $id];
             if ($data['selected']) {
-                DB::table('property_favorites')->insertOrIgnore($key);
+                PropertyFavorite::query()->firstOrCreate(['user_id' => $user->id, 'property_id' => $id]);
             } else {
-                DB::table('property_favorites')->where($key)->delete();
+                PropertyFavorite::query()->where('user_id', $user->id)->where('property_id', $id)->delete();
             }
         } else {
             $favorites = array_filter($request->session()->get('property_favorites', []), fn (string $entry): bool => $entry !== $id);
@@ -107,15 +107,22 @@ class PropertyDataController extends Controller
 
     public function attachment(Request $request, string $id): Response
     {
-        $attachment = DB::table('property_attachments')->where('id', $id)->first() ?? abort(404);
+        $attachment = PropertyAttachment::query()->find($id) ?? abort(404);
         $publicLogo = $attachment->resource === 'settings' && $attachment->record_id === 'company' && $attachment->field === 'logoData';
         if (! $publicLogo) {
             $user = $this->activeUser($request);
-            abort_unless($user && ! ($user->role === 'director' && $attachment->resource === 'payments')
-                && $this->state->visible($attachment->resource, $user)->where('id', $attachment->record_id)->exists(), 404);
+            abort_unless(
+                $user && ! ($user->role === 'director' && $attachment->resource === 'payments')
+                    && $this->state->visible($attachment->resource, $user)->where('id', $attachment->record_id)->exists(),
+                404,
+            );
         }
+
         $extension = match ($attachment->mime) {
-            'image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp', default => 'pdf',
+            'image/jpeg' => 'jpg',
+            'image/png' => 'png',
+            'image/webp' => 'webp',
+            default => 'pdf',
         };
 
         return response(base64_decode($attachment->content), 200, [
@@ -130,11 +137,14 @@ class PropertyDataController extends Controller
     private function activeUser(Request $request): ?User
     {
         $user = $request->user();
-        abort_if($user && (! $user->active || ($user->role === 'employee' && ! $user->employee_id)), 403);
+        abort_if($user && (! $user->active || $user->archived_at !== null || ($user->role === 'employee' && ! $user->employee_id)), 403);
 
         return $user;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function snapshot(Request $request, ?User $user, bool $workspace): array
     {
         return [
@@ -147,7 +157,7 @@ class PropertyDataController extends Controller
     {
         try {
             $result = DB::transaction(function () use ($request, $user, $workspace, $revision, $save): array {
-                $lock = DB::table('property_revisions')->where('id', 1);
+                $lock = PropertyRevision::query()->where('id', 1);
                 abort_unless((int) $lock->lockForUpdate()->value('version') === $revision, 409, 'Data sudah berubah. Muat ulang halaman sebelum menyimpan kembali.');
                 $save();
                 $lock->increment('version');

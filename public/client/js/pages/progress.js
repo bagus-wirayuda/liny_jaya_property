@@ -11,7 +11,7 @@
       return LJ.empty(
         "Belum ada rumah yang dipantau",
         "Pesan unit melalui katalog untuk memulai perjalanan Anda.",
-        A("Cari properti", "client/search.html", "primary", "home"),
+        A("Cari properti", "client/search", "primary", "home"),
       );
     let rs = d.reports.filter(
       (r) => r.unit === u.id && r.status === "Disetujui",
