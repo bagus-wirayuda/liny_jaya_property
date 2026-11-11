@@ -2,13 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Property\SimulatePaymentRequest;
 use App\Http\Requests\Property\ToggleFavoriteRequest;
 use App\Http\Requests\Property\UpdateChangesRequest;
 use App\Http\Requests\Property\WorkflowActionRequest;
+use App\Models\Promo;
 use App\Models\PropertyAttachment;
 use App\Models\PropertyFavorite;
 use App\Models\PropertyRevision;
 use App\Models\User;
+use App\Services\PaymentCalculator;
 use App\Services\PropertyChanges;
 use App\Services\PropertyRecords;
 use App\Services\PropertyState;
@@ -27,6 +30,7 @@ class PropertyDataController extends Controller
         private readonly PropertyRecords $records,
         private readonly PropertyChanges $changes,
         private readonly PropertyWorkflow $workflow,
+        private readonly PaymentCalculator $calculator,
     ) {}
 
     public function index(Request $request): JsonResponse
@@ -105,11 +109,34 @@ class PropertyDataController extends Controller
         return response()->json(['selected' => (bool) $data['selected']]);
     }
 
+    public function simulate(SimulatePaymentRequest $request): JsonResponse
+    {
+        $input = $request->validated();
+        $unit = $this->records->data('units', $this->records->row('units', $input['unit']));
+        $promo = isset($input['promoId'])
+            ? $this->records->data('promos', $this->records->row('promos', $input['promoId']))
+            : null;
+
+        $result = $this->calculator->simulate(
+            (int) $unit['price'],
+            (string) $unit['id'],
+            (string) $unit['project'],
+            (string) $input['method'],
+            $promo,
+            $input,
+        );
+
+        return response()->json(['simulation' => $result]);
+    }
+
     public function attachment(Request $request, string $id): Response
     {
         $attachment = PropertyAttachment::query()->find($id) ?? abort(404);
         $publicLogo = $attachment->resource === 'settings' && $attachment->record_id === 'company' && $attachment->field === 'logoData';
-        if (! $publicLogo) {
+        $publicPromo = $attachment->resource === 'promos'
+            && $attachment->field === 'promoImageData'
+            && Promo::query()->active()->where('id', $attachment->record_id)->exists();
+        if (! $publicLogo && ! $publicPromo) {
             $user = $this->activeUser($request);
             abort_unless(
                 $user && ! ($user->role === 'director' && $attachment->resource === 'payments')
@@ -130,7 +157,7 @@ class PropertyDataController extends Controller
             'Content-Disposition' => 'inline; filename="linyjaya.'.$extension.'"',
             'Content-Security-Policy' => 'sandbox',
             'X-Content-Type-Options' => 'nosniff',
-            'Cache-Control' => $publicLogo ? 'public, max-age=86400' : 'private, no-store',
+            'Cache-Control' => ($publicLogo || $publicPromo) ? 'public, max-age=86400' : 'private, no-store',
         ]);
     }
 

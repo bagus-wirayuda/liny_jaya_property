@@ -2,78 +2,81 @@
   "version": 1,
   "contentRevision": 4,
   "company": {
-    "name": "LinyJaya Development",
-    "tagline": "Wujudkan Rumah Impian & Investasi Terbaik Keluarga Anda.",
-    "email": "sales@linyjaya.com",
-    "phone": "0812-3456-7890",
-    "whatsapp": "6281234567890",
-    "address": "Sales Gallery LinyJaya, Jl. Raya Utama Residence No. 88, Bandung, Jawa Barat",
-    "hours": "Setiap Hari 08.30 – 18.00 WIB (Termasuk Hari Libur)",
-    "vision": "Menghadirkan lingkungan hunian berkualitas tinggi, bernilai investasi optimal, dan mempermudah kepemilikan rumah melalui skema pembayaran yang fleksibel.",
-    "mission": "Merancang hunian modern tropis fungsional, memberikan kemudahan 3 cara bayar (Cash Keras, Cash Bertahap 0%, dan KPR Bank Rekanan), serta mendampingi setiap calon pemilik rumah dengan konsultasi prima."
+    "name": "LinyJaya Property",
+    "tagline": "Hunian modern, terukur, dan nyaman untuk keluarga di Kota Makassar.",
+    "email": "halo@linyjaya.example",
+    "phone": "0811 2233 4455",
+    "whatsapp": "6281122334455",
+    "address": "Kota Makassar, Sulawesi Selatan (Alamat kantor pemasaran resmi tersedia saat konfirmasi)",
+    "hours": "Senin – Sabtu, 08.30 – 17.00 WITA",
+    "vision": "Menghadirkan kawasan hunian terukur, transparan, dan layak huni bagi keluarga di Kota Makassar dan Sulawesi Selatan.",
+    "mission": "Merancang hunian modern yang fungsional, menyediakan 3 skema pembayaran terstruktur (Cash Keras, Cash Lunak, dan estimasi KPR), serta mendampingi setiap calon pemilik rumah secara terbuka."
   },
   "profile": {
     "name": "Maya Putri",
     "email": "maya@example.com",
     "phone": "0812 0000 0123",
-    "address": "Bandung, Jawa Barat",
+    "address": "Jl. Perintis Kemerdekaan, Tamalanrea, Kota Makassar",
     "notifications": true
   },
   "projects": [
     {
       "id": "P1",
-      "name": "Liny Asri Residence",
-      "city": "Bandung",
-      "location": "Bandung Selatan, Jawa Barat",
+      "name": "LinyJaya Tamalanrea Residence",
+      "city": "Kota Makassar",
+      "location": "Koridor Tallasa City, Tamalanrea, Kota Makassar",
       "category": "Modern tropis",
       "image": "house-1",
       "price": 650000000,
       "units": 24,
       "status": "Pemasaran",
-      "description": "Ritme kota, ketenangan rumah. Kawasan hunian dengan ruang terbuka hijau dan arsitektur tropis yang menyambut cahaya alami.",
+      "description": "Kawasan hunian modern dengan tata ruang efisien di koridor pengembangan Tamalanrea – Tallasa City, Kota Makassar, dekat jalur utama dan fasilitas keluarga.",
       "facilities": [
-        "One gate system",
-        "Taman komunal",
-        "Rencana pengelolaan keamanan",
-        "Jalur pedestrian"
+        "Keamanan 24 jam",
+        "Akses Tol Sutami & Jl. Perintis Kemerdekaan",
+        "Dekat kawasan pendidikan Tamalanrea",
+        "Taman lingkungan",
+        "Jalan kawasan 8 meter"
       ],
       "tag": "Pilihan keluarga"
     },
     {
       "id": "P2",
-      "name": "Jaya Park Living",
-      "city": "Bekasi",
-      "location": "Jatiasih, Bekasi",
+      "name": "LinyJaya Panakkukang Park",
+      "city": "Kota Makassar",
+      "location": "Kawasan Panakkukang, Kota Makassar",
       "category": "Kontemporer",
       "image": "house-3",
       "price": 780000000,
       "units": 18,
       "status": "Pembangunan",
-      "description": "Hunian kontemporer dengan ruang fleksibel untuk keluarga yang terus bertumbuh. Dekat konektivitas kota, tetap terasa privat.",
+      "description": "Perumahan dua lantai bernuansa hangat di kawasan strategis Panakkukang, Kota Makassar, mendukung mobilitas keluarga ke pusat niaga, sekolah, dan perkantoran.",
       "facilities": [
-        "Clubhouse",
-        "Taman bermain",
-        "Rencana pengelolaan keamanan",
-        "Akses tol"
+        "Taman tematik keluarga",
+        "One-gate system",
+        "Akses cepat Jl. Boulevard & AP Pettarani",
+        "Drainase tertutup",
+        "Ruang komunal"
       ],
       "tag": "Lokasi strategis"
     },
     {
       "id": "P3",
-      "name": "Natura Hills",
-      "city": "Bogor",
-      "location": "Sentul, Bogor",
+      "name": "LinyJaya Antang Asri",
+      "city": "Kota Makassar",
+      "location": "Manggala – Antang, Kota Makassar",
       "category": "Eco living",
       "image": "neighborhood",
       "price": 895000000,
       "units": 16,
       "status": "Pemasaran",
-      "description": "Bangun keseharian yang lebih dekat dengan alam. Rumah berlangit tinggi, taman pribadi, dan lanskap hijau yang menenangkan.",
+      "description": "Hunian keluarga bertumbuh dengan halaman lega dan lingkungan asri di kawasan Manggala – Antang, Kota Makassar Timur.",
       "facilities": [
-        "Ruang hijau",
+        "Ruang terbuka hijau",
+        "Mushola kawasan",
         "Jogging track",
-        "Taman pribadi",
-        "Area komunitas"
+        "Akses Jl. Antang Raya & Urip Sumoharjo",
+        "Sistem CCTV area"
       ],
       "tag": "Dekat dengan alam"
     }
@@ -534,12 +537,12 @@
   "articles": [
     {
       "id": "AR-001",
-      "title": "Panduan Memilih Cara Bayar: Cash Keras, Cash Bertahap, atau KPR?",
+      "title": "Panduan Memilih Cara Bayar: Cash Keras, Cash Lunak, atau KPR",
       "category": "Panduan Finansial",
       "date": "2026-11-03",
       "image": "interior",
-      "summary": "Ketahui keunggulan Cash Keras dengan diskon spesial, kemudahan Cash Bertahap bunga 0%, dan keringanan KPR Bank.",
-      "body": "Memilih metode pembayaran rumah yang tepat sama pentingnya dengan memilih lokasi dan tipe hunian. Di LinyJaya Development, calon pembeli diberikan kebebasan memilih tiga metode pembayaran resmi yang transparan:\n\n1. Cash Keras (Tunai Keras): Cocok bagi Anda yang memiliki dana likuid dan ingin mendapatkan keuntungan finansial maksimal. Anda berhak mendapatkan diskon langsung 5%, bebas seluruh biaya legalitas (BPHTB, Notaris, Balik Nama SHM), serta prioritas serah terima unit.\n\n2. Cash Lunak / Bertahap ke Developer: Solusi terbaik jika Anda ingin mencicil tanpa melalui proses bank. Skema ini mengenakan bunga 0% flat langsung ke LinyJaya, tanpa BI Checking / SLIK OJK, dengan pilihan tenor 12, 24, hingga 36 bulan. Syaratnya cukup KTP dan NPWP.\n\n3. KPR Bank (Syariah & Konvensional): Pilihan tepat untuk cicilan ringan jangka panjang (10 hingga 25 tahun). Didukung oleh bank mitra terkemuka seperti BSI, BTN, Mandiri, BCA, dan BNI, dengan program promo DP mulai 10% serta subsidi biaya KPR hingga Rp 15 Juta. Tim Property Advisor LinyJaya siap mendampingi pemberkasan Anda hingga akad kredit."
+      "summary": "Panduan praktis membandingkan skema Cash Keras, Cash Lunak langsung ke developer, dan estimasi KPR sebelum pengajuan unit di Kota Makassar.",
+      "body": "Memilih skema pembayaran rumah perlu disesuaikan dengan likuiditas dan rencana keuangan keluarga. Di LinyJaya Property Makassar, tersedia tiga metode pembayaran yang dapat disimulasikan sebelum mengajukan pemesanan:\n\n1. Cash Keras: Pembayaran tunai penuh atau tanda jadi diikuti pelunasan langsung dalam batas waktu kesepakatan developer, cocok bagi pembeli yang memprioritaskan penyelesaian transaksi lebih cepat.\n\n2. Cash Lunak (Bertahap): Pembayaran bertahap langsung ke developer dengan DP dan cicilan bulanan terjadwal sesuai tenor pilihan tanpa melalui proses kredit bank.\n\n3. KPR: Pembiayaan melalui fasilitas Kredit Pemilikan Rumah (KPR) bank dengan DP, plafon pinjaman, suku bunga, dan tenor jangka panjang. Hasil simulasi KPR di situs ini bersifat estimasi ilustratif dan bukan persetujuan kredit bank."
     },
     {
       "id": "AR-002",
@@ -582,29 +585,50 @@
   "promos": [
     {
       "id": "PR-001",
-      "name": "Promo Cash Keras Diskon 5%",
+      "name": "Potongan 5% Tamalanrea Residence",
+      "scope": "Proyek",
       "project": "P1",
+      "unit": "",
+      "discountType": "Persentase",
+      "discountValue": 5,
+      "eligibleMethods": ["Cash Keras", "Cash Lunak", "KPR"],
+      "image": "house-1",
       "start": "2026-11-01",
       "end": "2026-12-31",
-      "description": "Dapatkan potongan langsung 5%, Free BPHTB, Free AJB & SHM, plus bonus Smart Door Lock dan Canopy Carport.",
+      "description": "Potongan harga 5% untuk pemesanan unit pilihan di LinyJaya Tamalanrea Residence selama periode promo.",
+      "terms": "Berlaku untuk pengajuan pemesanan baru pada periode aktif promo sesuai metode pembayaran yang dipilih.",
       "status": "Aktif"
     },
     {
       "id": "PR-002",
-      "name": "Cash Bertahap Developer Bunga 0%",
+      "name": "Potongan Langsung Panakkukang Park",
+      "scope": "Proyek",
       "project": "P2",
+      "unit": "",
+      "discountType": "Nominal",
+      "discountValue": 15000000,
+      "eligibleMethods": ["Cash Keras", "Cash Lunak"],
+      "image": "house-2",
       "start": "2026-11-01",
       "end": "2026-12-31",
-      "description": "Cicilan bertahap flat hingga 36 bulan langsung ke developer. Tanpa BI Checking dan proses 100% disetujui.",
+      "description": "Potongan langsung Rp 15.000.000 untuk pembelian unit di LinyJaya Panakkukang Park dengan metode Cash Keras atau Cash Lunak.",
+      "terms": "Berlaku selama periode promo untuk skema Cash Keras atau cicilan bertahap Cash Lunak langsung ke developer.",
       "status": "Aktif"
     },
     {
       "id": "PR-003",
-      "name": "KPR Express & Subsidi Biaya",
+      "name": "Potongan Rp 20 Juta Antang Asri",
+      "scope": "Proyek",
       "project": "P3",
+      "unit": "",
+      "discountType": "Nominal",
+      "discountValue": 20000000,
+      "eligibleMethods": ["Cash Keras", "Cash Lunak", "KPR"],
+      "image": "neighborhood",
       "start": "2026-11-01",
       "end": "2026-12-31",
-      "description": "DP ringan mulai 10% dengan subsidi biaya KPR s.d. Rp 15 Juta. Bekerja sama dengan BSI, Mandiri, BTN, BCA, & BNI.",
+      "description": "Potongan nominal Rp 20.000.000 untuk unit pilihan di LinyJaya Antang Asri, Makassar.",
+      "terms": "Berlaku pada periode aktif promo. Untuk skema KPR, persetujuan kredit tetap ditentukan oleh bank pilihan pembeli.",
       "status": "Aktif"
     }
   ],

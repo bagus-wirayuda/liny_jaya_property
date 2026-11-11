@@ -5,7 +5,7 @@
     <div class="auth-visual">
         <div>
             <h2>Ruang untuk hidup<br>lebih baik.</h2>
-            <p>LinyJaya Development</p>
+            <p>LinyJaya Property</p>
         </div>
     </div>
     <div class="auth-content">

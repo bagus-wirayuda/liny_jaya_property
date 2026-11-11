@@ -8,14 +8,18 @@
       paid = ps
         .filter((p) => p.status === "Terverifikasi")
         .reduce((s, p) => s + p.amount, 0),
-      price = active.reduce((s, b) => s + LJ.unit(b.unit).price, 0);
+      price = active.reduce(
+        (s, b) => s + Number(b.contractPrice ?? b.finalPrice ?? LJ.unit(b.unit)?.price ?? 0),
+        0,
+      );
+    const outstanding = Math.max(0, price - paid);
     return (
       LJ.kpis([
         [
-          "Harga total unit",
+          "Total kewajiban unit",
           LJ.money(price, true),
           "home",
-          "Semua pemesanan aktif",
+          "Harga bersih kontrak pemesanan aktif",
         ],
         [
           "Pembayaran tercatat",
@@ -25,9 +29,9 @@
         ],
         [
           "Sisa kewajiban",
-          LJ.money(price - paid, true),
+          LJ.money(outstanding, true),
           "wallet",
-          "Termasuk termin mendatang",
+          "Termasuk termin / angsuran mendatang",
         ],
         [
           "Menunggu verifikasi",

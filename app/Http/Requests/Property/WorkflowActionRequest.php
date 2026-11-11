@@ -18,7 +18,7 @@ class WorkflowActionRequest extends FormRequest
     {
         return [
             'revision' => ['required', 'integer', 'min:0'],
-            'input' => ['present', 'array', 'max:8'],
+            'input' => ['present', 'array', 'max:12'],
         ];
     }
 }

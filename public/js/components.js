@@ -10,6 +10,7 @@
     shield: "m12 2 9 4v6c0 6-9 10-9 10S3 18 3 12V6l9-4Zm-5 10 3 3 7-7",
     gem: "m3 8 4-5h10l4 5-9 13L3 8Zm0 0h18M7 3l5 18 5-18",
     chart: "M4 20h17M6 16v-5h4v5m3 0V7h4v9m-7-9 8-5m-4 0h4v4",
+    calculator: "M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Zm3 4h8v3H8V7Zm0 6h2v2H8v-2Zm3 0h2v2h-2v-2Zm3 0h2v2h-2v-2Zm-6 4h2v2H8v-2Zm3 0h2v2h-2v-2Zm3 0h2v2h-2v-2",
     layers: "m12 3 10 5-10 5L2 8l10-5Zm-10 9 10 5 10-5M2 16l10 5 10-5",
     bed: "M3 18v-8m18 8v-8M3 14h18M5 10V6h14v4M3 20v-2h18v2M8 10V8m8 2V8",
     bath: "M3 12h18v3a5 5 0 0 1-5 5H8a5 5 0 0 1-5-5v-3Zm2 0V5a3 3 0 0 1 6 0M7 22v-2m10 2v-2",
@@ -161,88 +162,292 @@
           day: "numeric",
           month: "short",
           year: "numeric",
-          timeZone: "Asia/Singapore",
+          timeZone: "Asia/Makassar",
         })
       : "—";
   LJ.image = (name) => "assets/images/" + name +
     (matchMedia("(max-width: 950px)").matches ? "-mobile.webp" : ".jpg");
-  LJ.calcKPR = (price, years = 20, dpPercent = 10, annualRate = 0.05) => {
-    const dp = price * (dpPercent / 100);
-    const principal = price - dp;
-    const monthlyRate = annualRate / 12;
-    const n = years * 12;
-    const pvif = Math.pow(1 + monthlyRate, n);
-    return Math.round((principal * monthlyRate * pvif) / (pvif - 1));
+  LJ.paymentConfig = () => ({
+    cashKeras: {
+      enabled: true,
+      label: "Cash Keras",
+      dpPercent: 20,
+      settlementDays: 14,
+      description: "Pembayaran tunai penuh atau tanda jadi diikuti pelunasan dalam batas waktu kesepakatan developer.",
+      ...(LJ.db?.paymentConfig?.cashKeras || {}),
+    },
+    cashLunak: {
+      enabled: true,
+      label: "Cash Lunak",
+      dpPercent: 20,
+      tenorMonths: 12,
+      maxTenorMonths: 36,
+      interestPercent: 0,
+      dueDay: 10,
+      description: "Pembayaran bertahap langsung ke developer dengan DP dan cicilan bulanan terjadwal.",
+      ...(LJ.db?.paymentConfig?.cashLunak || {}),
+    },
+    kpr: {
+      enabled: true,
+      label: "KPR",
+      dpPercent: 20,
+      defaultTenorYears: 15,
+      minTenorYears: 5,
+      maxTenorYears: 25,
+      interestRate: 7.5,
+      description: "Pembiayaan KPR melalui bank; hasil simulasi bersifat estimasi, bukan persetujuan kredit bank.",
+      ...(LJ.db?.paymentConfig?.kpr || {}),
+    },
+  });
+  LJ.normalizeMethod = (method) => {
+    if (method === "Cash Bertahap" || method === "Cash Lunak") return "Cash Lunak";
+    if (method === "KPR Bank" || method === "KPR") return "KPR";
+    return "Cash Keras";
   };
-  LJ.calcPaymentDetails = (price) => {
-    const cashKerasDiscountRate = 0.05;
-    const cashKerasDiscount = Math.round(price * cashKerasDiscountRate);
-    const cashKerasNett = price - cashKerasDiscount;
-    const bookingFee = 10000000;
-    const cashKerasDp = Math.round(cashKerasNett * 0.20) - bookingFee;
-    const cashKerasPelunasan = Math.round(cashKerasNett * 0.80);
+  LJ.isPromoActive = (promo, onDate = LJ.today()) => {
+    if (!promo || promo.status !== "Aktif") return false;
+    return Boolean(promo.start && promo.end && onDate >= promo.start && onDate <= promo.end);
+  };
+  LJ.promoMethods = (promo) =>
+    Array.isArray(promo?.eligibleMethods) && promo.eligibleMethods.length
+      ? promo.eligibleMethods
+      : ["Cash Keras", "Cash Lunak", "KPR"];
+  LJ.promoAppliesToUnit = (promo, unit, method = null) => {
+    if (!unit || !LJ.isPromoActive(promo)) return false;
+    if (promo.unit) {
+      if (promo.unit !== unit.id) return false;
+    } else if (promo.project) {
+      if (promo.project !== unit.project) return false;
+    }
+    if (method) {
+      const canonical = LJ.normalizeMethod(method);
+      if (!LJ.promoMethods(promo).includes(canonical)) return false;
+    }
+    return true;
+  };
+  LJ.promosForUnit = (unit, method = null) =>
+    (LJ.db?.promos || []).filter((promo) => LJ.promoAppliesToUnit(promo, unit, method));
+  LJ.promoDiscount = (basePrice, promo) => {
+    if (!promo || !Number(promo.discountValue)) return 0;
+    const raw =
+      promo.discountType === "Nominal"
+        ? Math.round(Number(promo.discountValue))
+        : Math.round(basePrice * (Number(promo.discountValue) / 100));
+    return Math.max(0, Math.min(basePrice, raw));
+  };
+  LJ.bestPromoForUnit = (unit, method = null) => {
+    const promos = LJ.promosForUnit(unit, method);
+    let best = null;
+    let bestDiscount = 0;
+    promos.forEach((promo) => {
+      const discount = LJ.promoDiscount(unit.price, promo);
+      if (!best || discount > bestDiscount) {
+        best = promo;
+        bestDiscount = discount;
+      }
+    });
+    return { promo: best, discount: bestDiscount, finalPrice: Math.max(0, unit.price - bestDiscount) };
+  };
+  LJ.calcKPR = (price, years, dpPercent, annualRatePercent) => {
+    const cfg = LJ.paymentConfig().kpr;
+    const y = Number(years ?? cfg.defaultTenorYears ?? 15);
+    const dpPct = Number(dpPercent ?? cfg.dpPercent ?? 20);
+    const ratePct = Number(annualRatePercent ?? cfg.interestRate ?? 7.5);
+    const dp = Math.round(price * (dpPct / 100));
+    const plafon = Math.max(0, price - dp);
+    const months = Math.max(1, y * 12);
+    const monthlyRate = ratePct > 1 ? ratePct / 100 / 12 : ratePct / 12;
+    if (plafon === 0) return 0;
+    if (monthlyRate <= 0) return Math.round(plafon / months);
+    const pvif = Math.pow(1 + monthlyRate, months);
+    return Math.round((plafon * (monthlyRate * pvif)) / (pvif - 1));
+  };
+  LJ.simulatePayment = ({
+    price,
+    unit = null,
+    method = "KPR",
+    promoId = "",
+    dpPercent = null,
+    tenorMonths = null,
+    tenorYears = null,
+    interestRate = null,
+  }) => {
+    const cfg = LJ.paymentConfig();
+    const canonical = LJ.normalizeMethod(method);
+    const basePrice = Number(unit?.price ?? price ?? 0);
+    const promo =
+      promoId && unit
+        ? LJ.promosForUnit(unit, canonical).find((x) => x.id === promoId) || null
+        : promoId
+          ? (LJ.db?.promos || []).find((x) => x.id === promoId && LJ.isPromoActive(x) && LJ.promoMethods(x).includes(canonical)) || null
+          : null;
+    const discountAmount = promo ? LJ.promoDiscount(basePrice, promo) : 0;
+    const finalPrice = Math.max(0, basePrice - discountAmount);
 
-    const bertahapDp = Math.round(price * 0.20);
-    const bertahapDpAfterBooking = bertahapDp - bookingFee;
-    const bertahapDpPerMonth3x = Math.round(bertahapDpAfterBooking / 3);
-    const bertahapSisa = price - bertahapDp;
-    const bertahap12x = Math.round(bertahapSisa / 12);
-    const bertahap24x = Math.round(bertahapSisa / 24);
-    const bertahap36x = Math.round(bertahapSisa / 36);
+    if (canonical === "Cash Keras") {
+      const mCfg = cfg.cashKeras;
+      const dpPct = Math.max(0, Math.min(100, Number(dpPercent ?? mCfg.dpPercent)));
+      const dpAmount = Math.round(finalPrice * (dpPct / 100));
+      const settlementAmount = Math.max(0, finalPrice - dpAmount);
+      return {
+        method: canonical,
+        originalPrice: basePrice,
+        discountAmount,
+        finalPrice,
+        promo,
+        dpPercent: dpPct,
+        dpAmount,
+        settlementAmount,
+        settlementDays: Number(mCfg.settlementDays || 14),
+        totalPayment: finalPrice,
+        assumptions: [
+          `DP / tanda jadi ${dpPct}% dibayar saat pemesanan (jatuh tempo 7 hari).`,
+          `Sisa pelunasan sebesar ${100 - dpPct}% jatuh tempo maksimal ${mCfg.settlementDays} hari setelah verifikasi DP.`,
+          "Harga bersih sudah memperhitungkan promo aktif apabila memenuhi syarat.",
+        ],
+      };
+    }
 
-    const kprDp = Math.round(price * 0.10);
-    const kprPlafon = price - kprDp;
-    const kpr10th = LJ.calcKPR(price, 10, 10, 0.05);
-    const kpr15th = LJ.calcKPR(price, 15, 10, 0.05);
-    const kpr20th = LJ.calcKPR(price, 20, 10, 0.05);
-    const kpr25th = LJ.calcKPR(price, 25, 10, 0.05);
+    if (canonical === "Cash Lunak") {
+      const mCfg = cfg.cashLunak;
+      const maxTenor = Math.max(1, Number(mCfg.maxTenorMonths || 36));
+      const dpPct = Math.max(5, Math.min(90, Number(dpPercent ?? mCfg.dpPercent)));
+      const months = Math.max(1, Math.min(maxTenor, Math.round(Number(tenorMonths ?? mCfg.tenorMonths))));
+      const interestPct = Math.max(0, Number(interestRate ?? mCfg.interestPercent ?? 0));
+      const dueDay = Math.max(1, Math.min(28, Number(mCfg.dueDay || 10)));
+      const dpAmount = Math.round(finalPrice * (dpPct / 100));
+      const principal = Math.max(0, finalPrice - dpAmount);
+      const totalInterest = interestPct > 0 ? Math.round(principal * (interestPct / 100) * (months / 12)) : 0;
+      const totalInstallments = principal + totalInterest;
+      const baseInstallment = Math.floor(totalInstallments / months);
+      const remainder = totalInstallments - baseInstallment * months;
+      const monthlyInstallment = Math.round(totalInstallments / months);
+      const anchor = new Date(LJ.today() + "T12:00:00+08:00");
+      const schedule = Array.from({ length: months }, (_, idx) => {
+        const d = new Date(anchor.getFullYear(), anchor.getMonth() + idx + 1, dueDay, 12);
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, "0");
+        const dd = String(d.getDate()).padStart(2, "0");
+        return {
+          kind: `Angsuran ${idx + 1}/${months}`,
+          amount: baseInstallment + (idx === months - 1 ? remainder : 0),
+          due: `${yyyy}-${mm}-${dd}`,
+        };
+      });
+      return {
+        method: canonical,
+        originalPrice: basePrice,
+        discountAmount,
+        finalPrice,
+        promo,
+        dpPercent: dpPct,
+        dpAmount,
+        principal,
+        tenorMonths: months,
+        interestPercent: interestPct,
+        totalInterest,
+        monthlyInstallment,
+        dueDay,
+        totalPayment: dpAmount + totalInstallments,
+        schedule,
+        assumptions: [
+          `Uang muka (DP) ${dpPct}% dari harga bersih, dibayar saat pemesanan.`,
+          `Sisa pokok dicicil langsung ke developer selama ${months} bulan dengan jatuh tempo tanggal ${dueDay} setiap bulan.`,
+          interestPct > 0
+            ? `Menggunakan bunga/margin flat ${interestPct}% per tahun sesuai ketentuan developer.`
+            : "Skema cicilan bertahap 0% bunga langsung kepada developer (tanpa bunga bank).",
+        ],
+      };
+    }
 
+    const mCfg = cfg.kpr;
+    const minY = Math.max(1, Number(mCfg.minTenorYears || 5));
+    const maxY = Math.max(minY, Number(mCfg.maxTenorYears || 25));
+    const dpPct = Math.max(5, Math.min(80, Number(dpPercent ?? mCfg.dpPercent)));
+    const years = Math.max(minY, Math.min(maxY, Math.round(Number(tenorYears ?? mCfg.defaultTenorYears))));
+    const ratePct = Math.max(0, Number(interestRate ?? mCfg.interestRate ?? 7.5));
+    const dpAmount = Math.round(finalPrice * (dpPct / 100));
+    const plafon = Math.max(0, finalPrice - dpAmount);
+    const months = years * 12;
+    const r = ratePct / 100 / 12;
+    let monthlyInstallment = 0;
+    if (plafon > 0) {
+      if (r > 0) {
+        const f = Math.pow(1 + r, months);
+        monthlyInstallment = Math.round((plafon * (r * f)) / (f - 1));
+      } else {
+        monthlyInstallment = Math.round(plafon / months);
+      }
+    }
+    const totalInstallments = monthlyInstallment * months;
+    return {
+      method: "KPR",
+      originalPrice: basePrice,
+      discountAmount,
+      finalPrice,
+      promo,
+      dpPercent: dpPct,
+      dpAmount,
+      plafon,
+      tenorYears: years,
+      tenorMonths: months,
+      interestRate: ratePct,
+      monthlyInstallment,
+      totalInstallments,
+      totalInterest: Math.max(0, totalInstallments - plafon),
+      totalPayment: dpAmount + totalInstallments,
+      disclaimer:
+        "Hasil simulasi KPR ini merupakan estimasi perhitungan anuitas dan bukan persetujuan kredit (SP3K) dari bank.",
+      assumptions: [
+        `Plafon pembiayaan bank dihitung dari Harga Bersih dikurangi DP (${dpPct}%).`,
+        `Angsuran per bulan dihitung dengan rumus anuitas efektif: P × r × (1+r)^n / ((1+r)^n - 1) selama ${months} bulan.`,
+        `Asumsi suku bunga efektif ${ratePct}% per tahun; suku bunga riil mengikuti kebijakan bank penyalur.`,
+        "Estimasi belum termasuk biaya akad, notaris, pajak (BPHTB), provisi, maupun asuransi bank.",
+      ],
+    };
+  };
+  LJ.calcPaymentDetails = (price, unit = null) => {
+    const cfg = LJ.paymentConfig();
+    const cashKeras = LJ.simulatePayment({ price, unit, method: "Cash Keras" });
+    const cashLunak = LJ.simulatePayment({ price, unit, method: "Cash Lunak" });
+    const kprDefault = LJ.simulatePayment({ price, unit, method: "KPR" });
+    const tenor12x = LJ.simulatePayment({ price, unit, method: "Cash Lunak", tenorMonths: Math.min(12, cfg.cashLunak.maxTenorMonths) }).monthlyInstallment;
+    const tenor24x = LJ.simulatePayment({ price, unit, method: "Cash Lunak", tenorMonths: Math.min(24, cfg.cashLunak.maxTenorMonths) }).monthlyInstallment;
+    const maxLunak = LJ.simulatePayment({ price, unit, method: "Cash Lunak", tenorMonths: cfg.cashLunak.maxTenorMonths }).monthlyInstallment;
     return {
       price,
-      bookingFee,
       cashKeras: {
-        discountRate: "5%",
-        discount: cashKerasDiscount,
-        nett: cashKerasNett,
-        booking: bookingFee,
-        dp: cashKerasDp,
-        pelunasan: cashKerasPelunasan,
-        tenor: "Maks. 30 Hari",
-        bonus: ["Diskon Spesial 5%", "Free BPHTB & Biaya Notaris/AJB", "Free Balik Nama SHM", "Bonus Kanopi & Smart Door Lock"],
+        ...cashKeras,
+        nett: cashKeras.finalPrice,
+        dp: cashKeras.dpAmount,
+        pelunasan: cashKeras.settlementAmount,
+        tenor: `Maks. ${cashKeras.settlementDays} Hari`,
       },
-      cashBertahap: {
-        bunga: "0% Flat (Tanpa Bunga)",
-        biChecking: "Tanpa BI Checking (100% Approval)",
-        booking: bookingFee,
-        dpTotal: bertahapDp,
-        dpAfterBooking: bertahapDpAfterBooking,
-        dpPerMonth3x: bertahapDpPerMonth3x,
-        sisa: bertahapSisa,
-        tenor12x: bertahap12x,
-        tenor24x: bertahap24x,
-        tenor36x: bertahap36x,
-        syarat: ["Cukup KTP & NPWP", "Tanpa Slip Gaji Bank", "Cicilan Flat Langsung ke PT LinyJaya"],
+      cashLunak: {
+        ...cashLunak,
+        dpTotal: cashLunak.dpAmount,
+        sisa: cashLunak.principal,
+        tenor12x,
+        tenor24x,
+        tenorMax: maxLunak,
+        maxTenorMonths: cfg.cashLunak.maxTenorMonths,
       },
       kpr: {
-        dp: kprDp,
-        dpPercent: "10%",
-        plafon: kprPlafon,
-        bungaPromo: "5.0% Fixed 3 Tahun",
-        tenor10th: kpr10th,
-        tenor15th: kpr15th,
-        tenor20th: kpr20th,
-        tenor25th: kpr25th,
-        banks: ["Bank Syariah Indonesia (BSI)", "Bank Mandiri", "BTN", "BCA", "BNI"],
-        bonus: ["Subsidi Biaya KPR s.d. Rp 15 Juta", "Free Asuransi Kebakaran Th. 1", "Didampingi Sales LinyJaya s.d. Akad"],
+        ...kprDefault,
+        dp: kprDefault.dpAmount,
+        tenor10th: LJ.calcKPR(kprDefault.finalPrice, Math.min(10, cfg.kpr.maxTenorYears), cfg.kpr.dpPercent, cfg.kpr.interestRate),
+        tenor15th: LJ.calcKPR(kprDefault.finalPrice, Math.min(15, cfg.kpr.maxTenorYears), cfg.kpr.dpPercent, cfg.kpr.interestRate),
+        tenor20th: LJ.calcKPR(kprDefault.finalPrice, Math.min(20, cfg.kpr.maxTenorYears), cfg.kpr.dpPercent, cfg.kpr.interestRate),
+        tenor25th: LJ.calcKPR(kprDefault.finalPrice, Math.min(25, cfg.kpr.maxTenorYears), cfg.kpr.dpPercent, cfg.kpr.interestRate),
       },
     };
   };
   LJ.whatsappLink = (message) => {
-    const phone = (LJ.db?.company?.whatsapp || "6281234567890").replace(/\D/g, "");
-    return "https://wa.me/" + phone + "?text=" + encodeURIComponent(message || "Halo Tim Sales LinyJaya Development, saya ingin konsultasi mengenai hunian.");
+    const phone = (LJ.db?.company?.whatsapp || "6281122334455").replace(/\D/g, "");
+    return "https://wa.me/" + phone + "?text=" + encodeURIComponent(message || "Halo Tim LinyJaya Property Makassar, saya ingin konsultasi mengenai hunian dan simulasi pembayaran.");
   };
   LJ.brand = (path = LJ.currentPage.role ? LJ.rolePage(LJ.currentPage.role) : "./") =>
-    `<a class="brand" href="${path}" aria-label="LinyJaya Development — Beranda">${LJ.db.company.logoData ? `<img src="${LJ.db.company.logoData}" alt="Logo LinyJaya"><span><strong>LinyJaya</strong><small>DEVELOPMENT</small></span>` : '<img class="brand-lockup brand-lockup--light" src="assets/brand/linyjaya-logo.svg" alt="LinyJaya Development"><img class="brand-lockup brand-lockup--dark" src="assets/brand/linyjaya-logo-dark.svg" alt="LinyJaya Development">'}</a>`;
+    `<a class="brand" href="${path}" aria-label="LinyJaya Property — Beranda">${LJ.db.company.logoData ? `<img src="${LJ.db.company.logoData}" alt="Logo LinyJaya Property"><span><strong>LinyJaya</strong><small>PROPERTY</small></span>` : '<img class="brand-lockup brand-lockup--light" src="assets/brand/linyjaya-logo.svg" alt="LinyJaya Property"><img class="brand-lockup brand-lockup--dark" src="assets/brand/linyjaya-logo-dark.svg" alt="LinyJaya Property">'}</a>`;
   LJ.btn = (text, action = "", id = "", style = "primary", icon = "") =>
     `<button type="button" class="btn ${style}" ${action ? `data-action="${action}" data-id="${LJ.esc(id)}"` : ""}>${icon ? LJ.icon(icon) : ""}${text}</button>`;
   LJ.link = (text, href, style = "primary", icon = "") =>
@@ -354,7 +559,16 @@
       input = `<textarea class="form-control" ${attr} maxlength="${f.maxlength || 3000}" ${placeholderAttr}>${LJ.esc(value)}</textarea>`;
     else if (f.type === "checkbox")
       input = `<input type="checkbox" ${attr} ${value ? "checked" : ""}>`;
-    else
+    else if (f.type === "checkboxes") {
+      const selected = Array.isArray(value) ? value : f.defaultValue || [];
+      input = `<div class="checkbox-group" id="f-${f.name}" data-field="${f.name}">${f.options
+        .map((o) => {
+          const [v, l] = Array.isArray(o) ? o : [o, o];
+          const checked = selected.includes(v) ? "checked" : "";
+          return `<label class="checkbox-chip"><input type="checkbox" name="${f.name}[]" value="${LJ.esc(v)}" ${checked}><span>${LJ.esc(l)}</span></label>`;
+        })
+        .join("")}</div>`;
+    } else
       input = `<input class="form-control" type="${f.type || "text"}" ${attr} ${f.type !== "file" ? `value="${LJ.esc(value)}"` : ""} ${placeholderAttr} ${!["number", "date", "file"].includes(f.type) ? `maxlength="${f.maxlength || 240}"` : ""}>`;
     return `<div class="field ${f.wide ? "wide" : ""}"><label for="f-${f.name}">${f.label}${f.required ? ' <span class="blue">*</span>' : ""}</label>${input}${f.hint ? `<small>${f.hint}</small>` : ""}</div>`;
   };
@@ -459,8 +673,15 @@
       if (form) {
         data = Object.fromEntries(new FormData(form));
         form
-          .querySelectorAll("input[type=checkbox]")
+          .querySelectorAll("input[type=checkbox]:not(.checkbox-group input)")
           .forEach((e) => (data[e.name] = e.checked));
+        form
+          .querySelectorAll(".checkbox-group[data-field]")
+          .forEach((group) => {
+            data[group.dataset.field] = [
+              ...group.querySelectorAll("input[type=checkbox]:checked"),
+            ].map((cb) => cb.value);
+          });
       }
       const button = form?.querySelector("[type=submit]");
       if (button) button.disabled = true;

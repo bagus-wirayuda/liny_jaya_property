@@ -17,7 +17,11 @@ class PropertyChanges
         'articles', 'notifications',
     ];
 
-    public function __construct(private readonly PropertyRecords $records, private readonly PropertyState $state) {}
+    public function __construct(
+        private readonly PropertyRecords $records,
+        private readonly PropertyState $state,
+        private readonly PaymentCalculator $calculator,
+    ) {}
 
     public function apply(?User $user, bool $workspace, array $change): void
     {
@@ -38,6 +42,13 @@ class PropertyChanges
         if (in_array($group, ['company', 'settings'], true)) {
             abort_unless($role === 'admin' && $operation === 'update' && $id === $group, 403);
             $this->updateSettings($group, $fields);
+
+            return;
+        }
+
+        if ($group === 'paymentConfig') {
+            abort_unless($role === 'admin' && $operation === 'update' && $id === 'payment_methods', 403);
+            $this->updatePaymentConfig($fields);
 
             return;
         }
@@ -148,6 +159,9 @@ class PropertyChanges
         if ($group === 'leads') {
             $rules['project'][0] = 'nullable';
         }
+        if ($group === 'promos') {
+            $rules['eligibleMethods.*'] = ['required', 'string', Rule::in(PaymentCalculator::CANONICAL_METHODS)];
+        }
         $patch = $this->validate($fields, $rules, ! $creating);
         $data = [...$before, ...$patch];
         $columns = [];
@@ -168,6 +182,9 @@ class PropertyChanges
         }
         if ($group === 'projects' && $creating) {
             $data['tag'] = $data['category'];
+        }
+        if ($group === 'promos') {
+            $data = $this->normalizePromoData($data, $patch);
         }
         if (in_array($group, ['promos', 'schedules'], true)) {
             $this->assert($data['end'] >= $data['start'], 'Tanggal selesai harus sesudah tanggal mulai.');
@@ -277,9 +294,10 @@ class PropertyChanges
         $booking = $this->records->data('bookings', $this->records->row('bookings', $data['booking']));
         $this->assert($booking['status'] === 'DP terverifikasi', 'Termin lanjutan tersedia setelah DP terverifikasi.');
         $unit = $this->records->data('units', $this->records->row('units', $booking['unit']));
+        $contractTarget = (int) ($booking['contractPrice'] ?? $booking['finalPrice'] ?? $unit['price']);
         $total = $this->records->query('payments')->where('booking_id', $data['booking'])->where('payload->status', '!=', 'Dibatalkan')->get()
             ->sum(fn ($row) => $this->records->data('payments', $row)['amount']);
-        $this->assert($data['amount'] <= $unit['price'] - $total, 'Jumlah melebihi sisa tagihan unit.');
+        $this->assert($data['amount'] <= $contractTarget - $total, 'Jumlah melebihi sisa tagihan unit.');
         $this->records->put('payments', $id, [...$data, 'date' => '', 'proof' => '', 'status' => 'Belum dibayar']);
     }
 
@@ -415,6 +433,129 @@ class PropertyChanges
         if ($revoke) {
             DB::table('sessions')->where('user_id', $account->id)->delete();
         }
+    }
+
+    private function updatePaymentConfig(array $fields): void
+    {
+        $rules = [
+            'cashKeras' => ['required', 'array:enabled,label,dpPercent,settlementDays,description'],
+            'cashKeras.enabled' => ['required', 'boolean'],
+            'cashKeras.label' => ['required', 'string', 'max:60'],
+            'cashKeras.dpPercent' => ['required', 'integer', 'min:0', 'max:100'],
+            'cashKeras.settlementDays' => ['required', 'integer', 'min:1', 'max:90'],
+            'cashKeras.description' => ['required', 'string', 'max:500'],
+            'cashLunak' => ['required', 'array:enabled,label,dpPercent,tenorMonths,maxTenorMonths,interestPercent,dueDay,description'],
+            'cashLunak.enabled' => ['required', 'boolean'],
+            'cashLunak.label' => ['required', 'string', 'max:60'],
+            'cashLunak.dpPercent' => ['required', 'integer', 'min:5', 'max:90'],
+            'cashLunak.tenorMonths' => ['required', 'integer', 'min:1', 'max:60'],
+            'cashLunak.maxTenorMonths' => ['required', 'integer', 'min:1', 'max:60'],
+            'cashLunak.interestPercent' => ['required', 'numeric', 'min:0', 'max:30'],
+            'cashLunak.dueDay' => ['required', 'integer', 'min:1', 'max:28'],
+            'cashLunak.description' => ['required', 'string', 'max:500'],
+            'kpr' => ['required', 'array:enabled,label,dpPercent,defaultTenorYears,minTenorYears,maxTenorYears,interestRate,description'],
+            'kpr.enabled' => ['required', 'boolean'],
+            'kpr.label' => ['required', 'string', 'max:60'],
+            'kpr.dpPercent' => ['required', 'integer', 'min:5', 'max:80'],
+            'kpr.defaultTenorYears' => ['required', 'integer', 'min:1', 'max:30'],
+            'kpr.minTenorYears' => ['required', 'integer', 'min:1', 'max:30'],
+            'kpr.maxTenorYears' => ['required', 'integer', 'min:1', 'max:30'],
+            'kpr.interestRate' => ['required', 'numeric', 'min:0', 'max:25'],
+            'kpr.description' => ['required', 'string', 'max:500'],
+        ];
+        $validated = $this->validate($fields, $rules, true);
+        $merged = $this->calculator->mergeConfig($validated);
+
+        $merged['cashKeras']['enabled'] = (bool) $merged['cashKeras']['enabled'];
+        $merged['cashKeras']['dpPercent'] = (int) $merged['cashKeras']['dpPercent'];
+        $merged['cashKeras']['settlementDays'] = (int) $merged['cashKeras']['settlementDays'];
+
+        $merged['cashLunak']['enabled'] = (bool) $merged['cashLunak']['enabled'];
+        $merged['cashLunak']['dpPercent'] = (int) $merged['cashLunak']['dpPercent'];
+        $merged['cashLunak']['tenorMonths'] = (int) $merged['cashLunak']['tenorMonths'];
+        $merged['cashLunak']['maxTenorMonths'] = (int) $merged['cashLunak']['maxTenorMonths'];
+        $merged['cashLunak']['interestPercent'] = round((float) $merged['cashLunak']['interestPercent'], 2);
+        $merged['cashLunak']['dueDay'] = (int) $merged['cashLunak']['dueDay'];
+
+        $merged['kpr']['enabled'] = (bool) $merged['kpr']['enabled'];
+        $merged['kpr']['dpPercent'] = (int) $merged['kpr']['dpPercent'];
+        $merged['kpr']['defaultTenorYears'] = (int) $merged['kpr']['defaultTenorYears'];
+        $merged['kpr']['minTenorYears'] = (int) $merged['kpr']['minTenorYears'];
+        $merged['kpr']['maxTenorYears'] = (int) $merged['kpr']['maxTenorYears'];
+        $merged['kpr']['interestRate'] = round((float) $merged['kpr']['interestRate'], 2);
+
+        $this->assert($merged['cashLunak']['tenorMonths'] <= $merged['cashLunak']['maxTenorMonths'], 'Tenor default Cash Lunak tidak boleh melebihi tenor maksimal.');
+        $this->assert($merged['kpr']['minTenorYears'] <= $merged['kpr']['maxTenorYears'], 'Tenor minimal KPR harus lebih kecil atau sama dengan tenor maksimal.');
+        $this->assert(
+            $merged['kpr']['defaultTenorYears'] >= $merged['kpr']['minTenorYears']
+                && $merged['kpr']['defaultTenorYears'] <= $merged['kpr']['maxTenorYears'],
+            'Tenor default KPR harus berada di antara tenor minimal dan maksimal.',
+        );
+        $this->assert(
+            $merged['cashKeras']['enabled'] || $merged['cashLunak']['enabled'] || $merged['kpr']['enabled'],
+            'Minimal satu metode pembayaran harus tetap aktif.',
+        );
+
+        $this->records->put('settings', 'payment_methods', $merged);
+    }
+
+    /**
+     * Normalize promo targeting, discounts, and defaults across rich UI and compact payloads.
+     *
+     * @param  array<string, mixed>  $data
+     * @param  array<string, mixed>  $patch
+     * @return array<string, mixed>
+     */
+    private function normalizePromoData(array $data, array $patch): array
+    {
+        $scope = (string) ($data['scope'] ?? '');
+        $unitId = (string) ($data['unit'] ?? '');
+        $projectId = (string) ($data['project'] ?? '');
+
+        if ($scope === 'Semua Properti') {
+            $projectId = '';
+            $unitId = '';
+        } elseif ($scope === 'Proyek') {
+            $unitId = '';
+            $this->assert($projectId !== '', 'Pilih proyek tujuan untuk promo tingkat proyek.');
+        } elseif ($scope === 'Unit' || $unitId !== '') {
+            $this->assert($unitId !== '', 'Pilih unit tujuan untuk promo tingkat unit.');
+            $unit = $this->records->row('units', $unitId);
+            $projectId = (string) $unit->project_id;
+            $scope = 'Unit';
+        } elseif ($projectId !== '') {
+            $scope = 'Proyek';
+        } else {
+            $this->assert(false, 'Pilih proyek, unit, atau cakupan semua properti untuk promo ini.');
+        }
+
+        $discountType = (string) ($data['discountType'] ?? 'Persentase');
+        $discountValue = array_key_exists('discountValue', $data) && $data['discountValue'] !== null
+            ? (int) $data['discountValue']
+            : 0;
+        if (array_key_exists('discountValue', $patch) || $discountValue > 0) {
+            $this->assert($discountValue >= 1, 'Nominal atau persentase potongan harus lebih dari 0.');
+        }
+        if ($discountType === 'Persentase') {
+            $this->assert($discountValue <= 90, 'Persentase potongan promo maksimal 90%.');
+        }
+
+        $eligibleMethods = $data['eligibleMethods'] ?? PaymentCalculator::CANONICAL_METHODS;
+        if (! is_array($eligibleMethods) || $eligibleMethods === []) {
+            $eligibleMethods = PaymentCalculator::CANONICAL_METHODS;
+        }
+
+        return [
+            ...$data,
+            'scope' => $scope,
+            'project' => $projectId,
+            'unit' => $unitId,
+            'discountType' => $discountType,
+            'discountValue' => $discountValue,
+            'eligibleMethods' => array_values(array_unique($eligibleMethods)),
+            'image' => (string) ($data['image'] ?? 'house-1'),
+            'terms' => (string) ($data['terms'] ?? ''),
+        ];
     }
 
     private function validate(array $fields, array $rules, bool $patch = false): array

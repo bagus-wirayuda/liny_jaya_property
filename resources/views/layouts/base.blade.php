@@ -8,7 +8,7 @@
         <meta name="description" content="@yield('meta_description')">
     @endif
     <base href="{{ url('/') }}/">
-    <title>@yield('title', $page['title'] ?? 'LinyJaya Development')</title>
+    <title>@yield('title', $page['title'] ?? 'LinyJaya Property')</title>
     <link rel="icon" type="image/svg+xml" href="{{ asset('assets/brand/favicon.svg') }}">
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
     @stack('head')

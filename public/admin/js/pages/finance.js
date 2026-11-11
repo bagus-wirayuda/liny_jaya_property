@@ -30,12 +30,13 @@
                 : t === "invoice"
                   ? "Invoice & kuitansi"
                   : "Semua pembayaran",
-              paymentTable(
-                t === "verify"
-                  ? d.payments.filter((p) => p.status === "Menunggu verifikasi")
-                  : d.payments,
-                "admin",
-              ),
+              `<div class="notice u-mb-16">${LJ.icon("info")}<span>Tagihan lanjutan dibuat otomatis sesuai metode bayar pemesanan (Pelunasan Cash Keras, jadwal Angsuran Cash Lunak, atau Termin KPR) berdasarkan <a href="admin/settings" class="text-link">konfigurasi metode pembayaran</a>.</span></div>` +
+                paymentTable(
+                  t === "verify"
+                    ? d.payments.filter((p) => p.status === "Menunggu verifikasi")
+                    : d.payments,
+                  "admin",
+                ),
               B("Tambah termin", "payment-new", "", "primary small", "plus"),
             ))
     );

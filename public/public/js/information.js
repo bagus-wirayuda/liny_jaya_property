@@ -2,38 +2,38 @@
   const faqItems = [
     [
       "Metode Pembayaran",
-      "Apa saja metode pembayaran yang tersedia di LinyJaya Development?",
-      "LinyJaya menyediakan 3 skema pembayaran resmi yang fleksibel: 1. Cash Keras (Tunai 1 bulan dengan diskon 5% dan bebas seluruh biaya legalitas), 2. Cash Lunak / Bertahap (Cicilan flat bunga 0% langsung ke developer tanpa BI Checking hingga 36 bulan), dan 3. KPR Bank Rekanan (BSI, BTN, Mandiri, BCA, BNI dengan DP ringan mulai 10% dan subsidi biaya KPR s.d. Rp 15 Juta).",
+      "Apa saja metode pembayaran yang tersedia di LinyJaya Property?",
+      "LinyJaya Property menyediakan 3 metode pembayaran yang dapat dikonfigurasi sesuai kebijakan proyek: 1. Cash Keras (pembayaran penuh dengan batas pelunasan sesuai ketentuan), 2. Cash Lunak (cicilan bertahap langsung ke developer dengan DP, tenor, dan jatuh tempo terjadwal), dan 3. KPR (pembiayaan melalui bank). Rincian simulasi tersedia pada menu Simulasi.",
     ],
     [
       "Metode Pembayaran",
-      "Bagaimana rincian skema Cash Keras dan keuntungannya?",
-      "Pembayaran Cash Keras diawali dengan Booking Fee Rp 10 Juta untuk mengikat kavling dan harga promo. Pembayaran DP 20% dilakukan maksimal 14 hari kerja, dan pelunasan 80% dilakukan maksimal 30 hari kerja saat penandatanganan Akta Jual Beli (AJB). Keuntungan: diskon langsung 5%, Free BPHTB, Free Notaris & AJB, Free Balik Nama SHM, serta bonus Canopy Carport & Smart Door Lock.",
+      "Bagaimana rincian skema Cash Keras?",
+      "Pada skema Cash Keras, konsumen melakukan pembayaran sesuai harga unit setelah dikurangi promo aktif (jika memenuhi syarat metode pembayaran), diawali DP sesuai persentase yang dikonfigurasi dan pelunasan penuh dalam batas hari yang ditetapkan perusahaan.",
     ],
     [
       "Metode Pembayaran",
-      "Apa syarat dan keunggulan Cash Lunak / Bertahap ke Developer?",
-      "Cash Bertahap ke developer PT LinyJaya mengenakan bunga 0% flat dan tanpa BI Checking / SLIK OJK (100% approval terjamin). Persyaratannya sangat ringkas: cukup melampirkan KTP dan NPWP tanpa slip gaji bank yang rumit. DP 20% dapat dicicil 3 kali, dan sisa 80% dapat dicicil rata dalam tenor 12, 24, atau 36 bulan.",
+      "Bagaimana ketentuan Cash Lunak langsung ke Developer?",
+      "Cash Lunak merupakan pembayaran bertahap langsung ke developer tanpa pembiayaan bank. Besaran DP minimal, pilihan tenor bulanan (misalnya 6 hingga 36 bulan), suku bunga developer, serta tanggal jatuh tempo tagihan bulanan mengikuti pengaturan resmi pada sistem.",
     ],
     [
       "Metode Pembayaran",
-      "Bagaimana proses pengajuan KPR Bank dan bank apa saja yang bekerjasama?",
-      "LinyJaya bekerjasama resmi dengan bank syariah dan konvensional terkemuka: Bank Syariah Indonesia (BSI), Bank Mandiri, BTN, BCA, dan BNI. Tersedia promo suku bunga rendah dan subsidi biaya KPR s.d. Rp 15 Juta. Seluruh pengumpulan dan pemberkasan KPR akan didampingi langsung oleh Property Advisor LinyJaya hingga disetujui (SP3K) dan akad kredit.",
+      "Apakah hasil simulasi KPR menjamin persetujuan kredit bank?",
+      "Tidak. Halaman Simulasi Pembayaran menghitung estimasi plafon pinjaman dan angsuran bulanan KPR berdasarkan rumus anuitas standar dari asumsi DP, tenor, dan suku bunga indikatif. Persetujuan kredit, suku bunga final, serta ketentuan akad merupakan kewenangan penuh bank penyalur KPR.",
     ],
     [
       "Konsultasi & Survei",
-      "Apakah bisa konsultasi atau berkunjung survei lokasi di akhir pekan?",
-      "Tentu saja! Sales Gallery dan Show Unit LinyJaya buka setiap hari, termasuk hari Sabtu, Minggu, dan hari libur nasional mulai pukul 08.30 hingga 18.00 WIB. Anda dapat berkonsultasi gratis dan didampingi langsung oleh Property Advisor kami.",
+      "Apakah bisa konsultasi atau berkunjung survei lokasi di Makassar pada akhir pekan?",
+      "Ya, layanan konsultasi dan jadwal survei lokasi di Kota Makassar dapat diatur Senin–Minggu (08.30–17.30 WITA) melalui halaman Kontak sesuai jadwal janji temu yang dikonfirmasi tim LinyJaya Property.",
     ],
     [
       "Konsultasi & Survei",
-      "Bagaimana cara memesan unit kavling impian saya?",
-      "Anda dapat memilih kavling melalui katalog site plan atau berkonsultasi dengan Property Advisor kami. Amankan unit pilihan Anda dengan Booking Fee Rp 10 Juta yang langsung mengurangi harga jual atau DP. Tim kami akan segera menyiapkan kelengkapan dokumen resmi unit Anda.",
+      "Bagaimana cara menggunakan promo saat memesan unit?",
+      "Promo aktif yang masih berada dalam periode berlaku dan sesuai cakupan proyek/unit serta metode pembayaran pilihan dapat dilihat di halaman Promo dan otomatis dipilih pada halaman Simulasi maupun formulir pemesanan unit. Promo yang kedaluwarsa atau nonaktif tidak dapat digunakan.",
     ],
     [
       "Pilihan Rumah",
       "Apa perbedaan tipe 60/90, 72/105, dan 90/120?",
-      "Angka pertama menunjukkan luas bangunan (LB) dan angka kedua menunjukkan luas tanah (LT) dalam meter persegi. Tipe 60/90 memiliki 2 kamar tidur & 2 kamar mandi, tipe 72/105 memiliki 3 kamar tidur & 2 kamar mandi, dan tipe 90/120 memiliki 3 kamar tidur & 3 kamar mandi dua lantai. Seluruh tipe mengusung arsitektur tropis modern yang hemat energi.",
+      "Angka pertama menunjukkan luas bangunan (LB) dan angka kedua menunjukkan luas tanah (LT) dalam meter persegi. Tipe 60/90 memiliki 2 kamar tidur & 2 kamar mandi, tipe 72/105 memiliki 3 kamar tidur & 2 kamar mandi, dan tipe 90/120 memiliki 3 kamar tidur & 3 kamar mandi dua lantai.",
     ],
     [
       "Pembangunan",
@@ -42,8 +42,8 @@
     ],
     [
       "Legalitas & Serah Terima",
-      "Bagaimana kepastian legalitas dan sertifikat hunian di LinyJaya?",
-      "LinyJaya Development menjamin 100% legalitas aman. Seluruh perizinan (PBG/IMB), site plan pemda, dan Sertifikat Hak Milik (SHM) telah terbit dan dipecah per kavling, sehingga siap untuk proses Akta Jual Beli (AJB) dan balik nama.",
+      "Bagaimana proses peninjauan dokumen dan legalitas unit di LinyJaya Property?",
+      "Kelengkapan perizinan, dokumen unit, jadwal serah terima, dan ketentuan tertulis disampaikan secara transparan oleh LinyJaya Property bersama dokumen resmi masing-masing unit sebelum penandatanganan kesepakatan.",
     ],
   ];
   LJ.legalDocument = (kind) => {

@@ -19,7 +19,10 @@ class PropertyState
         'director' => ['bookings', 'payments', 'tasks', 'reports', 'leads', 'employees', 'expenses', 'announcements', 'attendance', 'leave', 'documents', 'audit', 'schedules', 'messages', 'notifications', 'evaluations', 'tickets'],
     ];
 
-    public function __construct(private readonly PropertyRecords $records) {}
+    public function __construct(
+        private readonly PropertyRecords $records,
+        private readonly PaymentCalculator $calculator,
+    ) {}
 
     /**
      * Build the authorized query for a resource group scoped to the given user.
@@ -122,7 +125,7 @@ class PropertyState
         $reads = $viewer ? $viewer->readNotifications()->pluck('property_notifications.id')->flip() : collect();
 
         $files['settings']['company'] = $this->attachments('settings', ['company'])['company'] ?? [];
-        foreach (['payments', 'reports', 'documents'] as $group) {
+        foreach (['payments', 'reports', 'documents', 'promos'] as $group) {
             if (isset($rows[$group]) && ! ($group === 'payments' && $viewer?->role === 'director')) {
                 $files[$group] = $this->attachments($group, $rows[$group]->pluck('id')->all());
             }
@@ -164,6 +167,7 @@ class PropertyState
 
         $data['company'] = [...$company, ...$files['settings']['company']];
         $data['settings'] = $settings;
+        $data['paymentConfig'] = $this->calculator->config();
         $data['profile'] = $viewer ? $this->profile($viewer) : (object) [];
         $data['account'] = $viewer ? ['name' => $viewer->name, 'email' => $viewer->email] : (object) [];
         $data['accounts'] = $viewer?->role === 'admin' ? User::query()->whereNull('archived_at')->orderBy('name')

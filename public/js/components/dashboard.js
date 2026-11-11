@@ -11,7 +11,7 @@
       return `<div class="sidebar-entry"><div class="sidebar-entry-line">${link}<button type="button" class="sidebar-submenu-toggle" data-action="sidebar-submenu" aria-label="Submenu ${E(label)}" aria-controls="workspace-submenu" aria-expanded="false" hidden>${I("chevron", "sm")}</button></div><div id="workspace-submenu" class="sidebar-submenu" inert aria-hidden="true" hidden><div class="sidebar-submenu-links"></div></div></div>`;
     }).join("");
     const unreadCount = LJ.db.notifications.filter((n) => n.status === "Baru").length;
-    return `<div class="workspace workspace--${r.folder}"><div class="sidebar-overlay" data-action="sidebar"></div><aside id="workspace-sidebar" class="sidebar" aria-label="Menu ${r.name}"><div class="sidebar-brand">${LJ.brand(LJ.rolePage(role))}</div><div class="workspace-label">${r.name.toUpperCase()}</div><nav class="sidebar-scroll" aria-label="Navigasi ruang kerja">${links}<div class="workspace-label workspace-company-label">LINYJAYA DEVELOPMENT</div><a class="sidebar-link" href="./">${I("external")}Kembali ke website</a></nav><div class="sidebar-bottom"><button type="button" class="sidebar-account" data-action="profile-dropdown" aria-label="Menu profil ${E(r.person)}"><span class="avatar">${initials}</span><span><strong>${E(r.person)}</strong><small>${r.name}</small></span></button></div></aside><header class="topbar"><div class="flex"><button class="icon-btn menu-toggle" data-action="sidebar" aria-label="Menu ruang kerja" aria-controls="workspace-sidebar" aria-expanded="false">${I("menu")}</button><div class="topbar-title"><span>Ruang kerja ${I("chevron", "sm")}</span><strong id="workspace-breadcrumb"></strong></div></div><div class="topbar-actions"><span class="demo-indicator">LINYJAYA</span><button type="button" class="icon-btn theme-toggle-btn" data-action="theme-toggle" aria-label="${LJ.getTheme?.() === "dark" ? "Ganti ke mode terang" : "Ganti ke mode gelap"}" title="${LJ.getTheme?.() === "dark" ? "Mode Terang" : "Mode Gelap"}">${I(LJ.getTheme?.() === "dark" ? "sun" : "moon")}</button>${LJ.iBtn("search", "global-search", "", "Cari di ruang kerja")}<button class="icon-btn" data-action="notifications" aria-label="Lihat notifikasi">${I("bell")}<span class="notification-dot"${unreadCount ? "" : " hidden"}></span></button><button type="button" class="avatar topbar-avatar-btn" data-action="profile-dropdown" aria-label="Menu profil ${E(r.person)}" title="Profil ${E(r.person)}">${initials}</button></div></header><main class="workspace-main" id="main"><div id="workspace-content"></div><footer class="workspace-footer"><span>© LinyJaya Development · Ruang kerja ${r.name}</span><span>Informasi proyek dan catatan administrasi</span></footer></main></div>`;
+    return `<div class="workspace workspace--${r.folder}"><div class="sidebar-overlay" data-action="sidebar"></div><aside id="workspace-sidebar" class="sidebar" aria-label="Menu ${r.name}"><div class="sidebar-brand">${LJ.brand(LJ.rolePage(role))}</div><div class="workspace-label">${r.name.toUpperCase()}</div><nav class="sidebar-scroll" aria-label="Navigasi ruang kerja">${links}<div class="workspace-label workspace-company-label">LINYJAYA PROPERTY</div><a class="sidebar-link" href="./">${I("external")}Kembali ke website</a></nav><div class="sidebar-bottom"><button type="button" class="sidebar-account" data-action="profile-dropdown" aria-label="Menu profil ${E(r.person)}"><span class="avatar">${initials}</span><span><strong>${E(r.person)}</strong><small>${r.name}</small></span></button></div></aside><header class="topbar"><div class="flex"><button class="icon-btn menu-toggle" data-action="sidebar" aria-label="Menu ruang kerja" aria-controls="workspace-sidebar" aria-expanded="false">${I("menu")}</button><div class="topbar-title"><span>Ruang kerja ${I("chevron", "sm")}</span><strong id="workspace-breadcrumb"></strong></div></div><div class="topbar-actions"><span class="demo-indicator">LINYJAYA</span><button type="button" class="icon-btn theme-toggle-btn" data-action="theme-toggle" aria-label="${LJ.getTheme?.() === "dark" ? "Ganti ke mode terang" : "Ganti ke mode gelap"}" title="${LJ.getTheme?.() === "dark" ? "Mode Terang" : "Mode Gelap"}">${I(LJ.getTheme?.() === "dark" ? "sun" : "moon")}</button>${LJ.iBtn("search", "global-search", "", "Cari di ruang kerja")}<button class="icon-btn" data-action="notifications" aria-label="Lihat notifikasi">${I("bell")}<span class="notification-dot"${unreadCount ? "" : " hidden"}></span></button><button type="button" class="avatar topbar-avatar-btn" data-action="profile-dropdown" aria-label="Menu profil ${E(r.person)}" title="Profil ${E(r.person)}">${initials}</button></div></header><main class="workspace-main" id="main"><div id="workspace-content"></div><footer class="workspace-footer"><span>© LinyJaya Property · Ruang kerja ${r.name}</span><span>Informasi proyek dan catatan administrasi</span></footer></main></div>`;
   };
   const descriptions = {
     overview: "Semua yang perlu Anda ketahui, dalam satu pandangan.",
@@ -177,14 +177,20 @@
   }
   function bookingTable(bs, role) {
     return LJ.table(
-      ["Pemesanan / klien", "Unit", "Tanggal", "Status", "Aksi"],
-      bs.map((b) => [
-        `<strong>${E(b.id)}</strong><small>${E(b.client)}</small>`,
-        `<strong>${LJ.unitLabel(b.unit)}</strong><small>${E(LJ.project(LJ.unit(b.unit)?.project)?.name)}</small>`,
-        LJ.date(b.date),
-        LJ.badge(b.status),
-        `<div class="table-actions">${LJ.iBtn("eye", "booking-view", b.id, "Detail pemesanan")}${["admin", "client"].includes(role) && b.status === "Menunggu DP" ? LJ.iBtn("close", "booking-cancel", b.id, "Batalkan pemesanan") : ""}</div>`,
-      ]),
+      ["Pemesanan / klien", "Unit", "Metode & Harga", "Tanggal", "Status", "Aksi"],
+      bs.map((b) => {
+        const u = LJ.unit(b.unit);
+        const total = Number(b.contractPrice ?? b.finalPrice ?? u?.price ?? 0);
+        const tenorText = b.tenorMonths ? ` (${b.tenorMonths} bln)` : "";
+        return [
+          `<strong>${E(b.id)}</strong><small>${E(b.client)}</small>`,
+          `<strong>${LJ.unitLabel(b.unit)}</strong><small>${E(LJ.project(u?.project)?.name)}</small>`,
+          `<strong>${E((b.paymentMethod || "KPR") + tenorText)}</strong><small>${LJ.money(total, true)}${b.promoName ? " · Promo: " + E(b.promoName) : ""}</small>`,
+          LJ.date(b.date),
+          LJ.badge(b.status),
+          `<div class="table-actions">${LJ.iBtn("eye", "booking-view", b.id, "Detail pemesanan")}${["admin", "client"].includes(role) && b.status === "Menunggu DP" ? LJ.iBtn("close", "booking-cancel", b.id, "Batalkan pemesanan") : ""}</div>`,
+        ];
+      }),
     );
   }
   function paymentTable(ps, role) {

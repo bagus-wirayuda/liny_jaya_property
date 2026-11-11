@@ -32,6 +32,7 @@ Route::prefix('api/property')->name('property.')->group(function (): void {
     Route::post('/changes', [PropertyDataController::class, 'update'])->middleware('throttle:45,1')->name('update');
     Route::post('/workflow/{action}', [PropertyDataController::class, 'workflow'])->middleware(['auth', 'throttle:45,1'])->name('workflow');
     Route::post('/favorite', [PropertyDataController::class, 'favorite'])->middleware('throttle:45,1')->name('favorite');
+    Route::post('/simulate', [PropertyDataController::class, 'simulate'])->middleware('throttle:60,1')->name('simulate');
 });
 Route::get('/lampiran/{id}', [PropertyDataController::class, 'attachment'])->whereUuid('id')->name('property.attachment');
 
@@ -54,6 +55,10 @@ Route::get('/unit/{id}', PropertyPageController::class)
     ->defaults('pageKey', 'unit')
     ->where('id', '[\w-]+')
     ->name('public.unit.show');
+Route::get('/simulasi/{id}', PropertyPageController::class)
+    ->defaults('pageKey', 'simulasi')
+    ->where('id', '[\w-]+')
+    ->name('public.simulasi.unit');
 Route::get('/artikel-detail/{id}', PropertyPageController::class)
     ->defaults('pageKey', 'artikel-detail')
     ->where('id', '[\w-]+')

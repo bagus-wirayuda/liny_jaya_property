@@ -1,6 +1,6 @@
 @extends('layouts.auth')
 
-@section('title', 'Daftar sebagai klien · LinyJaya Development')
+@section('title', 'Daftar sebagai klien · LinyJaya Property')
 @section('heading', 'Daftar sebagai klien')
 
 @section('content')

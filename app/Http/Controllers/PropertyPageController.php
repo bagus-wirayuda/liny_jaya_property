@@ -65,6 +65,7 @@ class PropertyPageController extends Controller
                 'update' => route('property.update'),
                 'workflow' => route('property.workflow', ['action' => 'ACTION']),
                 'favorite' => route('property.favorite'),
+                'simulate' => route('property.simulate'),
                 'passwordUpdate' => route('profile.password'),
                 'login' => route('login'),
                 'logout' => route('logout'),

@@ -11,35 +11,35 @@
       </div>
       <div class="container architecture-layout">
         <div class="hero-copy reveal">
-          <span class="eyebrow">${I("spark")}PENGEMBANG HUNIAN MODERN TERPERCAYA</span>
-          <h1>Wujudkan Rumah Impian & <span class="highlight-swoosh">Investasi Terbaik.</span></h1>
-          <p>Koleksi hunian modern tropis berkualitas di lokasi strategis Jawa Barat. Nikmati kemudahan 3 cara bayar resmi: Diskon Cash Keras 5%, Cicilan Bertahap 0% ke Developer Tanpa Bank, serta KPR DP Ringan dengan Suku Bunga Bersubsidi.</p>
+          <span class="eyebrow">${I("spark")}LINYJAYA PROPERTY · KOTA MAKASSAR</span>
+          <h1>Hunian Nyaman untuk Keluarga di <span class="highlight-swoosh">Makassar.</span></h1>
+          <p>Kawasan perumahan terencana di Tamalanrea, Panakkukang, dan Manggala – Antang. Dapatkan transparansi progres konstruksi serta simulasi pembayaran Cash Keras, Cash Lunak, dan estimasi KPR langsung di website.</p>
           <div class="hero-value-props">
-            <div class="hero-value-pill">${I("spark", "sm")}<span>Diskon Cash Keras<br>Langsung 5%</span></div>
-            <div class="hero-value-pill">${I("layers", "sm")}<span>Cash Bertahap 0%<br>Tanpa BI Checking</span></div>
-            <div class="hero-value-pill">${I("building", "sm")}<span>KPR DP Ringan<br>Subsidi Biaya Rp 15 Jt</span></div>
+            <div class="hero-value-pill">${I("spark", "sm")}<span>Cash Keras<br>DP ${LJ.paymentConfig().cashKeras.dpPercent}% · Pelunasan ${LJ.paymentConfig().cashKeras.settlementDays} Hr</span></div>
+            <div class="hero-value-pill">${I("layers", "sm")}<span>Cash Lunak<br>Tenor s.d. ${LJ.paymentConfig().cashLunak.maxTenorMonths} Bulan</span></div>
+            <div class="hero-value-pill">${I("building", "sm")}<span>Simulasi KPR<br>Asumsi ${LJ.paymentConfig().kpr.interestRate}% p.a.</span></div>
           </div>
           <div class="hero-actions">
-            ${A("Jelajahi Pilihan Hunian", "properti", "primary", "arrow")}
-            ${B("Konsultasi Sales Sekarang", "consult-sales", "", "secondary", "message")}
+            ${A("Jelajahi Properti", "properti", "primary", "arrow")}
+            ${A("Simulasi Pembayaran", "simulasi", "secondary", "calculator")}
           </div>
           <div class="hero-proof">
             <span class="icon-tile feature-icon-compact">${I("pin", "sm")}</span>
-            <span>Kawasan Hunian Pilihan<br><strong>${E([...new Set(LJ.db.projects.map((p) => p.city))].filter(Boolean).join(" · ") || "Indonesia")}</strong></span>
+            <span>Kawasan Hunian Terkini<br><strong>${E([...new Set(LJ.db.projects.map((p) => p.city))].filter(Boolean).join(" · ") || "Kota Makassar, Sulawesi Selatan")}</strong></span>
           </div>
         </div>
         <figure class="architecture" aria-labelledby="architecture-title">
           <div class="architecture-header">
             <div>
-              <span class="architecture-kicker">DESAIN EKSKLUSIF —</span>
-              <figcaption id="architecture-title">Hunian Tropis Modern</figcaption>
-              <p class="architecture-subtitle">Arsitektur elegan, pencahayaan alami optimal, dan lingkungan asri yang mendukung tumbuh kembang keluarga.</p>
+              <span class="architecture-kicker">DESAIN HUNIAN —</span>
+              <figcaption id="architecture-title">Arsitektur Modern Makassar</figcaption>
+              <p class="architecture-subtitle">Tata ruang fungsional, pencahayaan alami optimal, dan lingkungan keluarga yang teratur.</p>
             </div>
-            <span class="architecture-index">HOT UNIT</span>
+            <span class="architecture-index">MAKASSAR</span>
           </div>
           <div class="architecture-stage">
-            <img class="architecture-photo" loading="lazy" decoding="async" src="${LJ.image("hero")}" alt="Referensi hunian modern dua lantai dengan taman dan kaca lebar">
-            <canvas class="architecture-canvas" tabindex="0" aria-label="Model hunian tropis tiga dimensi" aria-describedby="architecture-help" hidden></canvas>
+            <img class="architecture-photo" loading="lazy" decoding="async" src="${LJ.image("hero")}" alt="Referensi hunian modern dua lantai dengan taman dan bukaan cahaya alami">
+            <canvas class="architecture-canvas" tabindex="0" aria-label="Model hunian tiga dimensi" aria-describedby="architecture-help" hidden></canvas>
           </div>
           <div class="architecture-footer">
             <div class="architecture-legend">
@@ -48,7 +48,7 @@
                 <span class="arch-dot"></span>
                 <span class="arch-dot"></span>
               </div>
-              <p id="architecture-help">Show Unit Siap Dikunjungi Setiap Hari</p>
+              <p id="architecture-help">Kunjungan lokasi tersedia melalui penjadwalan</p>
             </div>
             <div class="architecture-controls" hidden>
               <button type="button" data-model-turn="-1" aria-label="Putar model ke kiri">${I("chevron", "sm")}</button>
@@ -64,126 +64,160 @@
     `<div class="container search-wrap">
       <div class="search-panel">
         <div class="search-tabs" role="tablist" aria-label="Tujuan pencarian">
-          <button role="tab" aria-selected="true" class="search-tab active" data-action="search-mode" data-id="hunian">${I("home", "sm")}Cari Hunian Siap Huni</button>
-          <button role="tab" aria-selected="false" class="search-tab" data-action="search-mode" data-id="investasi">${I("chart", "sm")}Peluang Investasi Properti</button>
+          <button role="tab" aria-selected="true" class="search-tab active" data-action="search-mode" data-id="hunian">${I("home", "sm")}Cari Hunian Keluarga</button>
+          <button role="tab" aria-selected="false" class="search-tab" data-action="search-mode" data-id="investasi">${I("chart", "sm")}Rencana Aset Properti</button>
         </div>
         <form id="hero-search" class="search-fields" action="properti" method="get">
-          <div class="search-field">${I("pin")}<div><label for="hero-city">Lokasi Pilihan</label><select id="hero-city" name="city"><option value="">Semua Lokasi${LJ.db.projects.length ? ` (${E([...new Set(LJ.db.projects.map((p) => p.city))].filter(Boolean).join(", "))})` : ""}</option>${[...new Set(LJ.db.projects.map((p) => p.city))].map((c) => `<option>${E(c)}</option>`).join("")}</select></div>${I("chevron", "sm")}</div>
+          <div class="search-field">${I("pin")}<div><label for="hero-city">Kota / Kawasan</label><select id="hero-city" name="city"><option value="">Semua Kawasan Makassar</option>${[...new Set(LJ.db.projects.map((p) => p.city))].map((c) => `<option>${E(c)}</option>`).join("")}</select></div>${I("chevron", "sm")}</div>
           <div class="search-field">${I("home")}<div><label for="hero-type">Tipe Rumah</label><select id="hero-type" name="type"><option value="">Semua Tipe (60/90, 72/105, 90/120)</option><option>60/90</option><option>72/105</option><option>90/120</option></select></div>${I("chevron", "sm")}</div>
           <div class="search-field">${I("layers")}<div><label for="hero-price">Rentang Anggaran</label><select id="hero-price" name="price"><option value="">Semua Harga</option><option value="750000000">Di bawah Rp 750 jt</option><option value="900000000">Di bawah Rp 900 jt</option><option value="1000000000">Di bawah Rp 1 M</option></select></div>${I("chevron", "sm")}</div>
-          <button class="btn primary" type="submit">${I("search")}Cari Rumah Idaman</button>
+          <button class="btn primary" type="submit">${I("search")}Cari Rumah</button>
         </form>
       </div>
     </div>`;
 
-  LJ.paymentFeatureSection = () => `
-    <section class="section">
-      <div class="container">
-        <div class="section-head text-center">
-          <div>
-            <span class="eyebrow">${I("wallet")}SOLUSI PEMBIAYAAN FLEKSIBEL</span>
-            <h2>Kemudahan 3 Metode Pembayaran di LinyJaya</h2>
-            <p>Kami memahami setiap keluarga memiliki perencanaan finansial berbeda. Pilih skema pembayaran resmi yang paling menguntungkan bagi Anda.</p>
+  LJ.paymentFeatureSection = () => {
+    const cfg = LJ.paymentConfig();
+    return `
+      <section class="section">
+        <div class="container">
+          <div class="section-head text-center">
+            <div>
+              <span class="eyebrow">${I("wallet")}METODE PEMBAYARAN PROPERTI</span>
+              <h2>Tiga Pilihan Skema Pembayaran LinyJaya Property</h2>
+              <p>Seluruh metode pembayaran terintegrasi dengan data unit, simulasi perhitungan, dan tagihan klien secara transparan.</p>
+            </div>
+          </div>
+
+          <div class="grid three u-mt-24">
+            <article class="panel pay-feature-card">
+              <div class="pay-feature-header">
+                <span class="icon-tile pay-feature-icon">${I("spark")}</span>
+                <span class="tag green">${cfg.cashKeras.enabled ? "Aktif" : "Nonaktif"}</span>
+              </div>
+              <h3>${E(cfg.cashKeras.label)}</h3>
+              <p>${E(cfg.cashKeras.description)}</p>
+              <div class="pay-feature-list">
+                <div>${I("check", "sm")} Uang Muka / DP awal <strong>${cfg.cashKeras.dpPercent}%</strong></div>
+                <div>${I("check", "sm")} Pelunasan maksimal <strong>${cfg.cashKeras.settlementDays} hari</strong> setelah DP terverifikasi</div>
+                <div>${I("check", "sm")} Dapat digabungkan dengan promo aktif yang memenuhi syarat</div>
+              </div>
+              <div class="pay-feature-action u-mt-20">
+                ${A("Simulasi Cash Keras", "simulasi?method=Cash+Keras", "secondary full", "calculator")}
+              </div>
+            </article>
+
+            <article class="panel pay-feature-card highlight-border">
+              <div class="pay-feature-header">
+                <span class="icon-tile pay-feature-icon blue">${I("layers")}</span>
+                <span class="tag blue">${cfg.cashLunak.enabled ? "Bertahap Developer" : "Nonaktif"}</span>
+              </div>
+              <h3>${E(cfg.cashLunak.label)}</h3>
+              <p>${E(cfg.cashLunak.description)}</p>
+              <div class="pay-feature-list">
+                <div>${I("check", "sm")} Uang Muka (DP) <strong>${cfg.cashLunak.dpPercent}%</strong> · Tenor default <strong>${cfg.cashLunak.tenorMonths} bln</strong></div>
+                <div>${I("check", "sm")} Pilihan tenor hingga <strong>${cfg.cashLunak.maxTenorMonths} bulan</strong> (jatuh tempo tgl ${cfg.cashLunak.dueDay})</div>
+                <div>${I("check", "sm")} Bunga developer <strong>${cfg.cashLunak.interestPercent}% per tahun</strong></div>
+              </div>
+              <div class="pay-feature-action u-mt-20">
+                ${A("Simulasi Cash Lunak", "simulasi?method=Cash+Lunak", "primary full", "calculator")}
+              </div>
+            </article>
+
+            <article class="panel pay-feature-card">
+              <div class="pay-feature-header">
+                <span class="icon-tile pay-feature-icon green">${I("building")}</span>
+                <span class="tag orange">${cfg.kpr.enabled ? "Estimasi KPR" : "Nonaktif"}</span>
+              </div>
+              <h3>${E(cfg.kpr.label)}</h3>
+              <p>${E(cfg.kpr.description)}</p>
+              <div class="pay-feature-list">
+                <div>${I("check", "sm")} Asumsi DP standar <strong>${cfg.kpr.dpPercent}%</strong> · Tenor ${cfg.kpr.minTenorYears}–${cfg.kpr.maxTenorYears} th</div>
+                <div>${I("check", "sm")} Estimasi bunga acuan <strong>${cfg.kpr.interestRate}% / tahun</strong></div>
+                <div>${I("check", "sm")} Hasil simulasi bersifat estimasi, bukan persetujuan kredit bank</div>
+              </div>
+              <div class="pay-feature-action u-mt-20">
+                ${A("Simulasi KPR", "simulasi?method=KPR", "secondary full", "calculator")}
+              </div>
+            </article>
           </div>
         </div>
+      </section>
+    `;
+  };
 
-        <div class="grid three u-mt-24">
-          <article class="panel pay-feature-card">
-            <div class="pay-feature-header">
-              <span class="icon-tile pay-feature-icon">${I("spark")}</span>
-              <span class="tag green">Hemat Maksimal</span>
+  LJ.promoHighlightSection = () => {
+    const activePromos = (LJ.db.promos || []).filter((p) => LJ.isPromoActive(p));
+    if (!activePromos.length) return "";
+    return `
+      <section class="section soft">
+        <div class="container">
+          <div class="section-head">
+            <div>
+              <span class="eyebrow">${I("spark")}PROMO HUNIAN AKTIF</span>
+              <h2>Program Promo Makassar Periode Ini</h2>
+              <p>Gunakan promo aktif pada unit pilihan saat menghitung simulasi pembayaran atau mengajukan pemesanan.</p>
             </div>
-            <h3>Cash Keras (Tunai 1 Bulan)</h3>
-            <p>Opsi terbaik untuk Anda yang ingin keuntungan maksimal tanpa beban cicilan masa depan.</p>
-            <div class="pay-feature-list">
-              <div>${I("check", "sm")} <strong>Diskon langsung 5%</strong> dari harga jual</div>
-              <div>${I("check", "sm")} <strong>Free BPHTB</strong>, Biaya Notaris & Akta AJB</div>
-              <div>${I("check", "sm")} <strong>Free Balik Nama SHM</strong> (Sertifikat Hak Milik)</div>
-              <div>${I("check", "sm")} Bonus Canopy Carport & Smart Door Lock</div>
-              <div>${I("check", "sm")} Prioritas serah terima unit</div>
-            </div>
-            <div class="pay-feature-action u-mt-20">
-              ${B("Konsultasi Cash Keras", "consult", ":cash-keras", "secondary full", "message")}
-            </div>
-          </article>
-
-          <article class="panel pay-feature-card highlight-border">
-            <div class="pay-feature-header">
-              <span class="icon-tile pay-feature-icon blue">${I("layers")}</span>
-              <span class="tag blue">Paling Fleksibel</span>
-            </div>
-            <h3>Cash Lunak / Bertahap Developer</h3>
-            <p>Cicil langsung ke pengembang PT LinyJaya tanpa perantara bank. Sangat mudah dan aman.</p>
-            <div class="pay-feature-list">
-              <div>${I("check", "sm")} <strong>Bunga 0% Flat</strong> (Tanpa bunga bank)</div>
-              <div>${I("check", "sm")} <strong>Tanpa BI Checking / SLIK OJK</strong> (100% Approve)</div>
-              <div>${I("check", "sm")} <strong>Syarat Mudah</strong>: Cukup KTP dan NPWP</div>
-              <div>${I("check", "sm")} Pilihan Tenor: 12, 24, hingga 36 Bulan</div>
-              <div>${I("check", "sm")} DP 20% dapat dicicil hingga 3 kali</div>
-            </div>
-            <div class="pay-feature-action u-mt-20">
-              ${B("Konsultasi Cash Bertahap", "consult", ":cash-bertahap", "primary full", "message")}
-            </div>
-          </article>
-
-          <article class="panel pay-feature-card">
-            <div class="pay-feature-header">
-              <span class="icon-tile pay-feature-icon green">${I("building")}</span>
-              <span class="tag orange">Cicilan Ringan</span>
-            </div>
-            <h3>KPR Bank Rekanan Terkemuka</h3>
-            <p>Cicilan ringan jangka panjang didukung oleh perbankan syariah dan konvensional nasional.</p>
-            <div class="pay-feature-list">
-              <div>${I("check", "sm")} <strong>DP Ringan mulai 10%</strong> (Ada subsidi DP 5%)</div>
-              <div>${I("check", "sm")} Bank Rekanan: <strong>BSI, BTN, Mandiri, BCA, BNI</strong></div>
-              <div>${I("check", "sm")} <strong>Subsidi Biaya KPR</strong> hingga Rp 15 Juta</div>
-              <div>${I("check", "sm")} Tenor Panjang: 10, 15, 20, hingga 25 Tahun</div>
-              <div>${I("check", "sm")} Full pendampingan berkas oleh tim sales s.d. akad</div>
-            </div>
-            <div class="pay-feature-action u-mt-20">
-              ${B("Konsultasi KPR Bank", "consult", ":kpr", "secondary full", "message")}
-            </div>
-          </article>
+            ${A("Lihat semua promo", "promo", "secondary", "arrow")}
+          </div>
+          <div class="grid three">
+            ${activePromos
+              .slice(0, 3)
+              .map((p) => {
+                const imgSrc = p.promoImageData || LJ.image(p.image || LJ.project(p.project)?.image || "house-1");
+                const disc = p.discountType === "Nominal" ? `Potongan ${LJ.money(p.discountValue, true)}` : `Diskon ${p.discountValue}%`;
+                return `<article class="panel promo-home-card">
+                  <div class="promo-card-media">
+                    <img src="${imgSrc}" alt="${E(p.name)}" loading="lazy">
+                    <span class="promo-discount-badge">${I("spark", "sm")} ${E(disc)}</span>
+                  </div>
+                  <div class="promo-home-body">
+                    <small class="muted">Berlaku s.d. ${LJ.date(p.end)}</small>
+                    <h3>${E(p.name)}</h3>
+                    <p>${E(p.description)}</p>
+                    <div class="u-mt-14 flex gap-8 wrap">
+                      ${A("Detail Promo", "promo", "secondary small", "arrow")}
+                      ${A("Simulasi", p.unit ? "simulasi?unit=" + encodeURIComponent(p.unit) + "&promo=" + encodeURIComponent(p.id) : "promo", "primary small", "calculator")}
+                    </div>
+                  </div>
+                </article>`;
+              })
+              .join("")}
+          </div>
         </div>
-
-        <div class="center-link u-mt-24">
-          <a href="${LJ.whatsappLink('Halo Tim Sales LinyJaya, saya ingin konsultasi simulasi cara bayar (Cash Keras / Bertahap / KPR).')}" target="_blank" rel="noopener noreferrer" class="btn whatsapp">
-            ${I("whatsapp")} Konsultasi Cepat via WhatsApp Sales
-          </a>
-        </div>
-      </div>
-    </section>
-  `;
+      </section>
+    `;
+  };
 
   LJ.lifestyleSection = () =>
-    `<section class="section soft">
+    `<section class="section">
       <div class="container">
         <div class="section-head">
           <div>
-            <span class="eyebrow">${I("leaf")}DIRANCANG UNTUK KEHIDUPAN</span>
-            <h2>Rumah yang memahami Anda.</h2>
-            <p>Kenyamanan punya banyak bentuk. Temukan ruang yang memberi tempat bagi hal-hal yang Anda sayangi.</p>
+            <span class="eyebrow">${I("leaf")}KEHIDUPAN DI MAKASSAR</span>
+            <h2>Rumah yang dirancang untuk keseharian keluarga.</h2>
+            <p>Mempertimbangkan orientasi cahaya, aksesibilitas jalan utama Makassar, dan fleksibilitas rencana pembayaran.</p>
           </div>
         </div>
         <div class="grid three">
           ${[
             [
               "users",
-              "Untuk keluarga yang bertumbuh",
-              "Ruang berkumpul yang hangat, kamar yang nyaman, dan lingkungan aman one-gate system untuk anak-anak.",
-              "Kenyamanan keluarga",
+              "Kawasan Tamalanrea & Antang",
+              "Berada dekat jalur pendidikan, perbelanjaan, dan koridor pertumbuhan kota Makassar Timur.",
+              "Akses keluarga",
             ],
             [
               "home",
-              "Untuk rumah pertama Anda",
-              "Tata ruang efisien, cicilan KPR terjangkau, serta program DP ringan yang mempermudah kepemilikan awal.",
-              "Solusi rumah pertama",
+              "Kawasan Panakkukang",
+              "Lingkungan strategis menuju pusat niaga dan perkantoran Makassar dengan tata kavling rapi.",
+              "Mobilitas mudah",
             ],
             [
-              "leaf",
-              "Untuk investasi jangka panjang",
-              "Lokasi berkembang pesat dengan kenaikan nilai investasi (capital gain) tinggi serta potensi sewa menarik.",
-              "Investasi bernilai tinggi",
+              "wallet",
+              "Transparansi Progres & Biaya",
+              "Client memantau status pembayaran, dokumen, dan laporan pembangunan unit langsung dari workspace.",
+              "Proses terukur",
             ],
           ]
             .map(
@@ -205,10 +239,10 @@
 
         <div class="container benefits">
           ${[
-            ["shield", "100% Legalitas Aman", "Sertifikat SHM, PBG/IMB Lengkap & Jelas"],
-            ["wallet", "3 Pilihan Cara Bayar", "Cash Keras, Bertahap 0%, & KPR Rekanan"],
-            ["pin", "Lokasi Super Strategis", "Akses cepat gerbang tol & stasiun utama"],
-            ["gem", "Free All Biaya & Bonus", "Free BPHTB, Notaris, & Promo Cashback"],
+            ["pin", "Fokus Kota Makassar", "Koridor Tamalanrea, Panakkukang & Manggala"],
+            ["wallet", "3 Skema Pembayaran", "Cash Keras, Cash Lunak & Estimasi KPR"],
+            ["spark", "Promo Terintegrasi", "Potongan langsung terhitung di simulasi"],
+            ["shield", "Pantau Progres Unit", "Laporan konstruksi & tagihan transparan"],
           ]
             .map(
               ([i, t, d]) =>
@@ -221,9 +255,9 @@
           <div class="container">
             <div class="section-head">
               <div>
-                <span class="eyebrow">${I("layers")}PILIHAN KAWASAN HUNIAN</span>
-                <h2>Temukan tempat terbaik Anda pulang.</h2>
-                <p>Setiap kawasan dirancang dengan konsep lingkungan hijau terpadu, one-gate system, dan fasilitas lengkap.</p>
+                <span class="eyebrow">${I("layers")}KAWASAN PERUMAHAN MAKASSAR</span>
+                <h2>Temukan hunian pilihan di Makassar.</h2>
+                <p>Pilih kawasan yang paling sesuai dengan aktivitas kerja, pendidikan keluarga, dan anggaran Anda.</p>
               </div>
               ${A("Lihat semua properti", "properti", "secondary", "arrow")}
             </div>
@@ -233,8 +267,7 @@
         </section>
 
         ${LJ.latestUnits()}
-
-        <!-- FITUR KHUSUS METODE PEMBAYARAN -->
+        ${LJ.promoHighlightSection()}
         ${LJ.paymentFeatureSection()}
 
         <section class="section soft">
@@ -243,21 +276,22 @@
               <img loading="lazy" src="${LJ.image("interior")}" alt="Interior terang dengan ruang keluarga yang hangat">
               <div class="image-note">
                 <span class="icon-tile article-feature-icon">${I("leaf")}</span>
-                <strong>Hunian Nyaman &<br>Bernilai Tinggi.</strong>
-                <p>Didukung jaminan mutu bangunan dan legalitas tuntas.</p>
+                <strong>Tata Ruang Terukur &<br>Pencahayaan Alami.</strong>
+                <p>Dirancang sesuai kebutuhan hunian keluarga masa kini di Kota Makassar.</p>
               </div>
             </div>
             <div class="about-copy">
-              <span class="eyebrow">${I("building")}TENTANG LINYJAYA DEVELOPMENT</span>
-              <h2>Membangun rumah.<br>Mewujudkan masa depan.</h2>
-              <p>LinyJaya Development hadir mendampingi perjalanan kepemilikan rumah Anda. Kami menyatukan perencanaan arsitektur tropis, material berkualitas tinggi, dan kepastian legalitas.</p>
+              <span class="eyebrow">${I("building")}TENTANG LINYJAYA PROPERTY</span>
+              <h2>Proses terukur.<br>Informasi terbuka.</h2>
+              <p>LinyJaya Property menghadirkan kawasan perumahan di Kota Makassar dengan perencanaan konstruksi bertahap, simulasi pembayaran yang dapat dihitung mandiri, serta pemantauan administrasi digital untuk klien.</p>
               <div class="check-list">
-                <div>${I("check")}Desain modern fungsional dengan sirkulasi udara optimal</div>
-                <div>${I("check")}Kemudahan cara bayar: Cash Keras Diskon 5%, Bertahap 0%, & KPR</div>
-                <div>${I("check")}Pendampingan penuh tim sales profesional hingga serah terima kunci</div>
+                <div>${I("check")}Simulasi Cash Keras, Cash Lunak, dan estimasi KPR dalam Rupiah</div>
+                <div>${I("check")}Promo aktif dengan periode berlaku & syarat yang jelas</div>
+                <div>${I("check")}Pendampingan jadwal kunjungan dan administrasi unit</div>
               </div>
-              <div class="u-mt-20">
-                ${B("Konsultasi dengan Property Advisor", "consult-sales", "", "primary", "message")}
+              <div class="u-mt-20 flex gap-10 wrap">
+                ${A("Hitung Simulasi", "simulasi", "primary", "calculator")}
+                ${B("Jadwalkan Konsultasi", "consult-sales", "", "secondary", "message")}
               </div>
             </div>
           </div>
@@ -267,56 +301,12 @@
           <div class="container">
             <div class="stats-strip">
               ${[
-                [count, "Kawasan Pilihan"],
-                [
-                  LJ.db.projects.reduce((sum, p) => sum + p.units, 0),
-                  "Unit Hunian Berkualitas",
-                ],
-                [new Set(LJ.db.projects.map((p) => p.city)).size, "Kota Strategis"],
-                ["100%", "Komitmen Kepuasan"],
+                [count, "Kawasan di Makassar"],
+                [LJ.db.projects.reduce((sum, p) => sum + p.units, 0), "Rencana Unit Hunian"],
+                [LJ.db.units.filter((u) => u.sale === "Tersedia").length, "Unit Tersedia Saat Ini"],
+                [(LJ.db.promos || []).filter((p) => LJ.isPromoActive(p)).length, "Promo Aktif"],
               ]
                 .map(([v, l]) => `<div><strong>${v}</strong><p>${l}</p></div>`)
-                .join("")}
-            </div>
-          </div>
-        </section>
-
-        <section class="section">
-          <div class="container">
-            <div class="section-head">
-              <div>
-                <span class="eyebrow">${I("arrow")}4 LANGKAH MENUJU RUMAH IMPIAN</span>
-                <h2>Proses Mudah. Hati Tenang.</h2>
-                <p>Dari pemilihan unit kavling hingga serah terima kunci, kami mendampingi setiap tahap.</p>
-              </div>
-            </div>
-            <div class="grid four">
-              ${[
-                [
-                  "01",
-                  "Pilih Kavling & Tipe",
-                  "Jelajahi denah rumah dan site plan kavling di lokasi terbaik.",
-                ],
-                [
-                  "02",
-                  "Konsultasi Skema Bayar",
-                  "Tentukan opsi Cash Keras (Diskon 5%), Cash Bertahap 0%, atau KPR Bank.",
-                ],
-                [
-                  "03",
-                  "Booking & Penyiapan Berkas",
-                  "Amankan unit dengan Booking Fee Rp 10 Jt dan kami bantu berkas sampai tuntas.",
-                ],
-                [
-                  "04",
-                  "Akad & Serah Terima Kunci",
-                  "Penandatanganan AJB/Akad kredit dan penyerahan rumah siap huni.",
-                ],
-              ]
-                .map(
-                  ([n, t, d]) =>
-                    `<article class="process-card"><div class="process-num">${n}</div><h3>${t}</h3><p>${d}</p></article>`,
-                )
                 .join("")}
             </div>
           </div>
@@ -330,8 +320,8 @@
             <div class="section-head">
               <div>
                 <span class="eyebrow">${I("file")}LINYJAYA INSIGHT & PANDUAN</span>
-                <h2>Inspirasi & Tips Cerdas Membeli Properti</h2>
-                <p>Pahami cara memilih rumah, simulasi angsuran, dan perencanaan investasi keluarga.</p>
+                <h2>Panduan Pembelian & Konstruksi Rumah</h2>
+                <p>Pahami skema pembayaran, estimasi KPR, dan tahapan pembangunan sebelum mengambil keputusan.</p>
               </div>
               ${A("Semua artikel", "artikel", "secondary", "arrow")}
             </div>

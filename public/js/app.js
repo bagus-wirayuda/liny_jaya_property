@@ -111,11 +111,11 @@
       LJ.mountArchitecture?.();
       document.title =
         file === "home"
-          ? "LinyJaya Development — Ruang untuk hidup lebih baik."
+          ? "LinyJaya Property Makassar — Ruang untuk hidup lebih baik."
           : (document
               .querySelector("h1")
               ?.textContent?.replace(/\s+/g, " ")
-              .trim() || "LinyJaya Development") + " · LinyJaya Development";
+              .trim() || "LinyJaya Property") + " · LinyJaya Property";
     }
     if (inputId) {
       const el = document.getElementById(inputId);
@@ -180,6 +180,7 @@
     "floors",
     "amount",
     "score",
+    "discountValue",
   ];
   function entityForm(key, id) {
     const cfg = LJ.entityConfig()[key];
@@ -225,6 +226,37 @@
             .map((x) => x.trim())
             .filter(Boolean);
           if (!existing) data.tag = data.category;
+        }
+        if (key === "promos") {
+          delete data["eligibleMethods[]"];
+          const file = data.promoImageFile;
+          delete data.promoImageFile;
+          if (file instanceof File && file.size > 0) {
+            if (!file.type.startsWith("image/"))
+              throw Error("Gambar promo harus berupa berkas JPG, PNG, atau WebP.");
+            data.promoImageData = await LJ.fileData(file);
+          }
+          if (data.scope === "Semua Properti") {
+            data.project = "";
+            data.unit = "";
+          } else if (data.scope === "Proyek") {
+            data.unit = "";
+            if (!data.project)
+              throw Error("Pilih proyek untuk promo Proyek Tertentu.");
+          } else if (data.scope === "Unit") {
+            if (!data.unit)
+              throw Error("Pilih unit rumah untuk promo Unit Tertentu.");
+            const targetUnit = LJ.unit(data.unit);
+            if (targetUnit) data.project = targetUnit.project;
+          }
+          data.discountValue = Math.round(Number(data.discountValue || 0));
+          if (
+            data.discountType === "Persentase" &&
+            (data.discountValue < 1 || data.discountValue > 90)
+          )
+            throw Error("Potongan persentase harus antara 1% hingga 90%.");
+          if (data.discountType === "Nominal" && data.discountValue < 1)
+            throw Error("Nominal potongan promo harus lebih dari 0.");
         }
         if (key === "units") {
           if (
@@ -610,7 +642,9 @@
     "select-plot": (id) => {
       const u = LJ.unit(id);
       if (!u) return;
-      const pm = LJ.calcPaymentDetails(u.price);
+      const pm = LJ.calcPaymentDetails(u.price, u);
+      const best = LJ.bestPromoForUnit(u);
+      const cfg = LJ.paymentConfig();
       LJ.modal(
         "Kavling " + u.block + "-" + u.number + " · Tipe " + u.type,
         `<p class="u-text-12">${E(LJ.project(u.project)?.name)} · ${E(LJ.project(u.project)?.location)}</p>
@@ -622,7 +656,7 @@
         <div class="sales-kpr-highlight u-mb-12">
           <span class="u-text-10">Estimasi Cicilan KPR:</span>
           <strong>Mulai ${LJ.money(pm.kpr.tenor20th, true)} <small>/ bulan</small></strong>
-          <span class="tag green u-float-end">Bisa Cash Bertahap 0%</span>
+          ${best.promo ? `<span class="tag green u-float-end">Promo: Hemat ${LJ.money(best.discount, true)}</span>` : cfg.cashLunak.enabled ? `<span class="tag green u-float-end">Cash Lunak s.d. ${cfg.cashLunak.maxTenorMonths} bln</span>` : ""}
         </div>
         <div class="grid two">
           <div><p>Penjualan</p>${LJ.badge(u.sale)}</div>
@@ -630,27 +664,89 @@
         </div>
         ${LJ.progress(u.progress, u.stage)}
         <div class="modal-footer">
-          ${A("Detail unit & simulasi", LJ.propertyPage("units", id, role() === "public" ? null : role()), "secondary", "eye")}
+          ${A("Simulasi Pembayaran", "simulasi?unit=" + encodeURIComponent(id), "secondary", "calculator")}
+          ${A("Detail unit", LJ.propertyPage("units", id, role() === "public" ? null : role()), "ghost", "eye")}
           ${u.sale === "Tersedia" ? B("Konsultasi Unit Ini", "consult", u.project + ":" + u.id, "primary", "message") : ""}
         </div>`,
       );
     },
-    book: (id) => {
+    book: (id, prefill = {}) => {
       const u = LJ.unit(id);
       if (!u || role() !== "client") return;
+      const cfg = LJ.paymentConfig();
+      const methodOptions = [
+        cfg.cashKeras.enabled && [
+          "Cash Keras",
+          `Cash Keras (DP ${cfg.cashKeras.dpPercent}%, lunas ${cfg.cashKeras.settlementDays} hari)`,
+        ],
+        cfg.cashLunak.enabled && [
+          "Cash Lunak",
+          `Cash Lunak (DP ${cfg.cashLunak.dpPercent}%, s.d. ${cfg.cashLunak.maxTenorMonths} bln)`,
+        ],
+        cfg.kpr.enabled && [
+          "KPR",
+          `KPR (Estimasi DP ${cfg.kpr.dpPercent}%, bukan persetujuan kredit)`,
+        ],
+      ].filter(Boolean);
+      const initialMethod =
+        prefill.method && methodOptions.some(([m]) => m === prefill.method)
+          ? prefill.method
+          : methodOptions[0]?.[0] || "KPR";
+      const allUnitPromos = LJ.promosForUnit(u);
+      const promoOptions = [
+        [
+          "",
+          allUnitPromos.length
+            ? "Tanpa promo (Harga katalog normal)"
+            : "Tidak ada promo aktif untuk unit ini",
+        ],
+        ...allUnitPromos.map((pr) => [
+          pr.id,
+          `${pr.name} — Hemat ${LJ.money(LJ.promoDiscount(u.price, pr))} (${LJ.promoMethods(pr).join("/")})`,
+        ]),
+      ];
+      const maxLunak = Math.max(1, Number(cfg.cashLunak.maxTenorMonths || 36));
+      const tenorChoices = [6, 12, 18, 24, 30, 36]
+        .filter((m) => m <= maxLunak)
+        .concat(maxLunak > 36 ? [maxLunak] : []);
+      if (!tenorChoices.includes(Number(cfg.cashLunak.tenorMonths))) {
+        tenorChoices.push(Number(cfg.cashLunak.tenorMonths));
+        tenorChoices.sort((a, b) => a - b);
+      }
+      const simPreview = LJ.simulatePayment({
+        unit: u,
+        method: initialMethod,
+        promoId: prefill.promoId || "",
+        tenorMonths: prefill.tenorMonths || cfg.cashLunak.tenorMonths,
+      });
+
       LJ.formModal(
         "Konsultasi & Pemesanan Unit " + u.block + "-" + u.number,
         [
           {
             name: "payment",
-            label: "Rencana metode pembayaran",
+            label: "Metode pembayaran",
             type: "select",
-            options: [
-              ["Cash Keras", "Cash Keras"],
-              ["Cash Bertahap", "Cash Bertahap"],
-              ["KPR Bank", "KPR Bank"],
-            ],
+            options: methodOptions,
             required: true,
+          },
+          {
+            name: "tenorMonths",
+            label: "Tenor Cash Lunak (bulan, khusus Cash Lunak)",
+            type: "select",
+            options: tenorChoices.map((m) => [
+              String(m),
+              `${m} bulan angsuran ke developer`,
+            ]),
+            required: false,
+          },
+          {
+            name: "promoId",
+            label: "Promo aktif yang digunakan (opsional)",
+            type: "select",
+            options: promoOptions,
+            required: false,
+            wide: true,
           },
           {
             name: "note",
@@ -661,27 +757,59 @@
           {
             name: "consent",
             label:
-              "Saya mengajukan konsultasi pemesanan unit ini bersama Property Advisor LinyJaya.",
+              "Saya mengajukan pemesanan unit ini di LinyJaya Property (simulasi KPR bersifat estimasi).",
             type: "checkbox",
             required: true,
             wide: true,
           },
         ],
-        {},
+        {
+          payment: initialMethod,
+          tenorMonths: String(prefill.tenorMonths || cfg.cashLunak.tenorMonths),
+          promoId: prefill.promoId || "",
+        },
         async (data) => {
           if (!data.consent)
             throw Error(
               "Konfirmasikan pengajuan Anda sebelum melanjutkan.",
             );
-          await LJ.bookUnit(id, data.note, data.payment, data.consent);
+          await LJ.bookUnit(id, data.note, data.payment, data.consent, {
+            promoId: data.promoId || undefined,
+            tenorMonths:
+              data.payment === "Cash Lunak"
+                ? Number(data.tenorMonths || cfg.cashLunak.tenorMonths)
+                : undefined,
+          });
           LJ.toast(
-            "Permohonan konsultasi pemesanan berhasil dicatat. Tim Sales LinyJaya akan mendampingi proses Anda.",
+            "Permohonan pemesanan berhasil dicatat. Jadwal DP dan rincian simulasi tersimpan di portal klien.",
           );
           openPage("client/bookings");
         },
-        "Kirim Permohonan Konsultasi",
-        `<div class="notice">${I("home")}<span><strong>${E(LJ.project(u.project)?.name)} · ${LJ.unitLabel(id)}</strong><br>Klien: ${E(LJ.db.profile.name)}<br>Harga katalog: ${LJ.money(u.price)} · Rencana DP: ${LJ.money(Math.round(u.price * 0.2))}. Ketentuan resmi mengikuti kesepakatan perusahaan.</span></div>`,
+        "Ajukan Pemesanan Unit",
+        `<div class="notice">${I("home")}<span><strong>${E(LJ.project(u.project)?.name)} · ${LJ.unitLabel(id)}</strong><br>Klien: ${E(LJ.db.profile.name)}<br>Harga katalog: ${LJ.money(u.price)}${simPreview.discountAmount > 0 ? ` · Potongan promo: -${LJ.money(simPreview.discountAmount)}` : ""} · Perkiraan DP awal: ${LJ.money(simPreview.dpAmount)}. Ketentuan final mengikuti dokumen resmi perusahaan.</span></div>`,
       );
+    },
+    "book-from-sim": (id) => {
+      const cur = LJ.currentSimulation;
+      if (cur?.unit?.id === id && cur?.sim) {
+        actions.book(id, {
+          method: cur.sim.method,
+          promoId: cur.sim.promo?.id || "",
+          tenorMonths: cur.sim.tenorMonths,
+        });
+      } else {
+        actions.book(id);
+      }
+    },
+    "consult-from-sim": (id) => {
+      const cur = LJ.currentSimulation;
+      const suffix =
+        cur?.sim?.method === "Cash Keras"
+          ? ":cash-keras"
+          : cur?.sim?.method === "Cash Lunak"
+            ? ":cash-lunak"
+            : ":kpr";
+      actions.consult(id + suffix);
     },
     interest: (id) => {
       actions.consult(id);
@@ -702,7 +830,7 @@
       let projectId = "";
       let unitId = "";
       let initialTopic = "Konsultasi Pembelian & Simulasi Angsuran";
-      let initialPayment = "Cash Bertahap (Bunga 0% ke Developer)";
+      let initialPayment = "Cash Lunak";
 
       if (typeof id === "string" && id.includes(":")) {
         const parts = id.split(":");
@@ -713,17 +841,17 @@
           projectId = parts[0];
           unitId = parts[1];
           const mode = parts[2];
-          if (mode === "survey") initialTopic = "Survei Lokasi & Show Unit Langsung";
-          else if (mode === "cash-keras") initialPayment = "Cash Keras (Diskon 5% & Free Biaya Legalitas)";
-          else if (mode === "cash-bertahap") initialPayment = "Cash Lunak / Bertahap (Bunga 0% ke Developer)";
-          else if (mode === "kpr") initialPayment = "KPR Bank Rekanan (DP Ringan 10% & Subsidi Biaya)";
+          if (mode === "survey") initialTopic = "Survei Lokasi & Unit Makassar";
+          else if (mode === "cash-keras") initialPayment = "Cash Keras";
+          else if (mode === "cash-lunak" || mode === "cash-bertahap") initialPayment = "Cash Lunak";
+          else if (mode === "kpr") initialPayment = "KPR";
         } else if (parts[0].startsWith("U")) {
           unitId = parts[0];
           const uRecord = LJ.unit(unitId);
           if (uRecord) projectId = uRecord.project;
-          if (parts[1] === "cash-keras") initialPayment = "Cash Keras (Diskon 5% & Free Biaya Legalitas)";
-          else if (parts[1] === "cash-bertahap") initialPayment = "Cash Lunak / Bertahap (Bunga 0% ke Developer)";
-          else if (parts[1] === "kpr") initialPayment = "KPR Bank Rekanan (DP Ringan 10% & Subsidi Biaya)";
+          if (parts[1] === "cash-keras") initialPayment = "Cash Keras";
+          else if (parts[1] === "cash-lunak" || parts[1] === "cash-bertahap") initialPayment = "Cash Lunak";
+          else if (parts[1] === "kpr") initialPayment = "KPR";
         }
       } else if (typeof id === "string" && id.startsWith("U")) {
         unitId = id;
@@ -740,9 +868,16 @@
 
       const p = projectId ? LJ.project(projectId) : null;
       const unit = unitId ? LJ.unit(unitId) : null;
-      const waMsg = "Halo Tim Sales LinyJaya, saya ingin konsultasi mengenai " +
+      const cfg = LJ.paymentConfig();
+      const paymentChoices = [
+        cfg.cashKeras.enabled && ["Cash Keras", "Cash Keras (Pembayaran penuh)"],
+        cfg.cashLunak.enabled && ["Cash Lunak", `Cash Lunak (Bertahap s.d. ${cfg.cashLunak.maxTenorMonths} bln ke Developer)`],
+        cfg.kpr.enabled && ["KPR", "KPR (Pembiayaan bank, simulasi estimasi)"],
+        ["Konsultasi & Simulasi Khusus", "Konsultasi & Simulasi Khusus (Minta saran tim)"],
+      ].filter(Boolean);
+      const waMsg = "Halo Tim LinyJaya Property Makassar, saya ingin konsultasi mengenai " +
         (unit ? "Rumah " + unit.block + "-" + unit.number + " (" + unit.type + ") di " : "") +
-        (p ? p.name : "hunian LinyJaya") +
+        (p ? p.name : "hunian LinyJaya Property") +
         (unit ? " dengan harga " + LJ.money(unit.price) : "") +
         ". Rencana metode bayar: " + initialPayment + ".";
 
@@ -761,12 +896,7 @@
             name: "payment",
             label: "Pilihan metode pembayaran yang diminati",
             type: "select",
-            options: [
-              ["Cash Keras (Diskon 5% & Free Biaya Legalitas)", "Cash Keras (Diskon 5% & Free Biaya Legalitas)"],
-              ["Cash Lunak / Bertahap (Bunga 0% ke Developer)", "Cash Lunak / Bertahap (Bunga 0% ke Developer)"],
-              ["KPR Bank Rekanan (DP Ringan 10% & Subsidi Biaya)", "KPR Bank Rekanan (DP Ringan 10% & Subsidi Biaya)"],
-              ["Konsultasi & Simulasi Khusus", "Konsultasi & Simulasi Khusus (Butuh Saran Sales)"],
-            ],
+            options: paymentChoices,
             required: true,
           },
           {
@@ -775,9 +905,9 @@
             type: "select",
             options: [
               "Konsultasi Pembelian & Simulasi Angsuran",
-              "Survei Lokasi & Show Unit Langsung",
-              "Pilihan Unit Kavling & Denah",
-              "Konsultasi Persyaratan KPR Bank",
+              "Survei Lokasi & Unit Makassar",
+              "Pilihan Unit Kavling & Promo Aktif",
+              "Konsultasi Estimasi KPR",
             ],
             required: true,
           },
@@ -827,11 +957,11 @@
         },
         "Kirim Permohonan Konsultasi",
         `<div class="consult-sales-modal-header">
-          <div class="consult-unit-badge">${I("home")} <strong>${unit ? "Unit " + unit.block + "-" + unit.number + " (" + unit.type + ")" : (p ? E(p.name) : "Konsultasi Hunian LinyJaya")}</strong> ${p && unit ? "· " + E(p.name) : ""} ${unit ? "· <span class='blue'>" + LJ.money(unit.price, true) + "</span>" : ""}</div>
-          <p class="u-text-11 u-mt-6">Layanan konsultasi properti dan survei show unit bebas biaya bersama Property Advisor LinyJaya.</p>
+          <div class="consult-unit-badge">${I("home")} <strong>${unit ? "Unit " + unit.block + "-" + unit.number + " (" + unit.type + ")" : (p ? E(p.name) : "Konsultasi Hunian LinyJaya Property")}</strong> ${p && unit ? "· " + E(p.name) : ""} ${unit ? "· <span class='blue'>" + LJ.money(unit.price, true) + "</span>" : ""}</div>
+          <p class="u-text-11 u-mt-6">Layanan konsultasi hunian Makassar dan simulasi pembayaran bersama tim LinyJaya Property.</p>
           <div class="u-mt-10 u-mb-14">
             <a href="${LJ.whatsappLink(waMsg)}" target="_blank" rel="noopener noreferrer" class="btn whatsapp small full">
-              ${I("whatsapp")} Respon Cepat: Chat Langsung via WhatsApp Sales
+              ${I("whatsapp")} Respon Cepat: Chat via WhatsApp
             </a>
           </div>
         </div>`,
@@ -875,6 +1005,7 @@
       const b = LJ.book(id),
         u = LJ.unit(b?.unit);
       if (!b) return;
+      const netPrice = Number(b.contractPrice ?? b.finalPrice ?? u?.price ?? 0);
       LJ.modal(
         "Detail pemesanan",
         LJ.table(
@@ -884,9 +1015,18 @@
             ["Klien", E(b.client)],
             ["Proyek", E(LJ.project(u?.project)?.name)],
             ["Unit", LJ.unitLabel(b.unit)],
-            ["Harga", LJ.money(u?.price || 0)],
+            ["Harga katalog", LJ.money(u?.price || 0)],
+            ...(b.promoName
+              ? [
+                  ["Promo diterapkan", `${E(b.promoName)} (-${LJ.money(b.discountAmount || 0)})`],
+                ]
+              : []),
+            ["Harga bersih", `<strong>${LJ.money(netPrice)}</strong>`],
             ["Tanggal", LJ.date(b.date)],
-            ["Metode pembayaran", E(b.paymentMethod || "Belum tercatat")],
+            [
+              "Metode pembayaran",
+              E((b.paymentMethod || "Belum tercatat") + (b.tenorMonths ? ` (${b.tenorMonths} bulan)` : "")),
+            ],
             ["Status", LJ.badge(b.status)],
             ["Catatan", E(b.note || "—")],
           ],
@@ -937,7 +1077,7 @@
       const p = LJ.db.payments.find((x) => x.id === id);
       LJ.download(
         "LinyJaya-" + id + ".txt",
-        `DRAF ADMINISTRASI — UNTUK PENINJAUAN\nLinyJaya Development\n${p.id}\nKlien: ${p.client}\nJenis: ${p.kind}\nJumlah: ${LJ.money(p.amount)}\nJatuh tempo: ${LJ.date(p.due)}\nStatus: ${p.status}\nUnit: ${LJ.unitLabel(LJ.book(p.booking)?.unit)}`,
+        `DRAF ADMINISTRASI — UNTUK PENINJAUAN\nLinyJaya Property Makassar\n${p.id}\nKlien: ${p.client}\nJenis: ${p.kind}\nJumlah: ${LJ.money(p.amount)}\nJatuh tempo: ${LJ.date(p.due)}\nStatus: ${p.status}\nUnit: ${LJ.unitLabel(LJ.book(p.booking)?.unit)}`,
       );
       LJ.toast("Ringkasan pembayaran disiapkan untuk diunduh.");
     },
@@ -1047,12 +1187,13 @@
         async (data) => {
           const b = LJ.book(data.booking),
             u = LJ.unit(b?.unit);
+          const contractTarget = Number(b.contractPrice ?? b.finalPrice ?? u.price);
           const billed = LJ.db.payments
             .filter((p) => p.booking === b.id && p.status !== "Dibatalkan")
             .reduce((s, p) => s + p.amount, 0);
-          if (Number(data.amount) > u.price - billed)
+          if (Number(data.amount) > contractTarget - billed)
             throw Error(
-              "Sisa yang belum ditagihkan: " + LJ.money(u.price - billed),
+              "Sisa yang belum ditagihkan: " + LJ.money(Math.max(0, contractTarget - billed)),
             );
           LJ.db.payments.push({
             id: LJ.uid("PAY"),
@@ -1605,6 +1746,12 @@
       }
       return;
     }
+    const simMethodBtn = e.target.closest("[data-sim-method]");
+    if (simMethodBtn && !simMethodBtn.disabled) {
+      e.preventDefault();
+      LJ.setSimMethod?.(simMethodBtn.dataset.simMethod);
+      return;
+    }
     const tab = e.target.closest("[data-tab], [data-sidebar-tab]");
     if (tab) {
       if (currentRole) {
@@ -1698,6 +1845,49 @@
         await saveToast("Informasi perusahaan diperbarui.");
         return;
       }
+      if (form.id === "payment-config-form") {
+        const fe = form.elements;
+        const clTenor = Number(fe.cl_tenorMonths.value);
+        const clMax = Number(fe.cl_maxTenorMonths.value);
+        const kprDef = Number(fe.kpr_defaultTenorYears.value);
+        const kprMin = Number(fe.kpr_minTenorYears.value);
+        const kprMax = Number(fe.kpr_maxTenorYears.value);
+        if (clTenor > clMax)
+          throw Error("Tenor default Cash Lunak tidak boleh melebihi tenor maksimal.");
+        if (kprMin > kprDef || kprDef > kprMax)
+          throw Error("Tenor default KPR harus berada di antara tenor minimal dan maksimal.");
+        LJ.db.paymentConfig = {
+          cashKeras: {
+            enabled: fe.ck_enabled.checked,
+            label: "Cash Keras",
+            dpPercent: Number(fe.ck_dpPercent.value),
+            settlementDays: Number(fe.ck_settlementDays.value),
+            description: fe.ck_description.value.trim(),
+          },
+          cashLunak: {
+            enabled: fe.cl_enabled.checked,
+            label: "Cash Lunak",
+            dpPercent: Number(fe.cl_dpPercent.value),
+            tenorMonths: clTenor,
+            maxTenorMonths: clMax,
+            interestPercent: Number(fe.cl_interestPercent.value),
+            dueDay: Number(fe.cl_dueDay.value),
+            description: fe.cl_description.value.trim(),
+          },
+          kpr: {
+            enabled: fe.kpr_enabled.checked,
+            label: "KPR",
+            dpPercent: Number(fe.kpr_dpPercent.value),
+            defaultTenorYears: kprDef,
+            minTenorYears: kprMin,
+            maxTenorYears: kprMax,
+            interestRate: Number(fe.kpr_interestRate.value),
+            description: fe.kpr_description.value.trim(),
+          },
+        };
+        await saveToast("Konfigurasi metode pembayaran diperbarui.");
+        return;
+      }
       if (form.id === "password-change-form") {
         const res = await LJ.changePassword(data);
         form.reset();
@@ -1731,6 +1921,14 @@
       LJ.articleCategory = el.value;
       LJ.render();
     }
+    if (el.id === "promo-filter-project" || el.id === "promo-filter-method") {
+      LJ.renderPromoResults?.();
+      return;
+    }
+    if (el.closest("#sim-workspace")) {
+      LJ.onSimInput?.(el);
+      return;
+    }
     if (!el.dataset.setting && !el.dataset.profileNotification) return;
     if (LJ.saving) {
       el.checked = !el.checked;
@@ -1755,6 +1953,9 @@
       LJ.filters = Object.fromEntries(new FormData(el.closest("form")));
       document.getElementById("catalog-results").innerHTML =
         LJ.catalogResults();
+    }
+    if (el.closest("#sim-workspace")) {
+      LJ.onSimInput?.(el);
     }
     if (el.id === "table-search") {
       LJ.tableQuery = el.value;

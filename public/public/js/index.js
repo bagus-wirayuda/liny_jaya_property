@@ -6,14 +6,18 @@
     let content,
       active = clean;
     if (clean === "properti") {
-      const cities = [...new Set((LJ.db.projects || []).map((p) => p.city).filter(Boolean))].join(", ") || "Jawa Barat";
+      const cities = [...new Set((LJ.db.projects || []).map((p) => p.city).filter(Boolean))].join(", ") || "Kota Makassar";
       content =
         LJ.pageHero(
           "Katalog Properti & Hunian",
-          "Koleksi Rumah Modern & Skema Cara Bayar Fleksibel.",
-          `Jelajahi kawasan pilihan di ${E(cities)}. Nikmati kemudahan Cash Keras Diskon 5%, Cash Bertahap Bunga 0%, serta KPR Bank DP Ringan.`,
+          "Koleksi Rumah Modern & Pilihan Skema Pembayaran.",
+          `Jelajahi kawasan pilihan di ${E(cities)}. Bandingkan skema Cash Keras, Cash Lunak langsung developer, maupun estimasi KPR sesuai kebutuhan Anda.`,
         ) +
         `<div class="container page-body">${LJ.publicationNotice()}${LJ.catalog()}</div>`;
+    } else if (clean === "promo") {
+      content = LJ.pages.public.promos();
+    } else if (clean === "simulasi") {
+      content = LJ.pages.public.simulasi(id);
     } else if (clean === "proyek") {
       active = "properti";
       const p = LJ.project(id);

@@ -226,24 +226,104 @@
       prefix: "PR",
       fields: [
         field("name", "Nama promo"),
-        field(
-          "project",
-          "Proyek",
-          "select",
-          LJ.db.projects.map((p) => [p.id, p.name]),
-        ),
-        field("start", "Mulai", "date"),
+        field("scope", "Cakupan promo", "select", [
+          ["Semua Properti", "Semua Properti Makassar"],
+          ["Proyek", "Proyek Tertentu"],
+          ["Unit", "Unit Rumah Tertentu"],
+        ]),
+        {
+          ...field(
+            "project",
+            "Proyek (opsional jika Unit/Semua Properti)",
+            "select",
+            [["", "Semua Proyek / Mengikuti Unit"], ...LJ.db.projects.map((p) => [p.id, p.name])],
+          ),
+          required: false,
+        },
+        {
+          ...field(
+            "unit",
+            "Unit rumah spesifik (opsional)",
+            "select",
+            [
+              ["", "Tidak dibatasi ke 1 unit"],
+              ...LJ.db.units.map((u) => [
+                u.id,
+                `${LJ.project(u.project)?.name || ""} · ${u.block}-${u.number} (${u.type})`,
+              ]),
+            ],
+          ),
+          required: false,
+        },
+        field("discountType", "Jenis potongan", "select", [
+          ["Persentase", "Persentase (%)"],
+          ["Nominal", "Potongan Harga Langsung (Rp)"],
+        ]),
+        {
+          ...field("discountValue", "Nilai potongan (% atau Rp)", "number", [], {
+            min: 1,
+            step: "1",
+          }),
+        },
+        {
+          name: "eligibleMethods",
+          label: "Metode pembayaran yang memenuhi syarat",
+          type: "checkboxes",
+          options: [
+            ["Cash Keras", "Cash Keras"],
+            ["Cash Lunak", "Cash Lunak"],
+            ["KPR", "KPR"],
+          ],
+          defaultValue: ["Cash Keras", "Cash Lunak", "KPR"],
+          required: true,
+          wide: true,
+        },
+        field("image", "Tema gambar default", "select", [
+          ["house-1", "Cluster Modern Tamalanrea"],
+          ["house-2", "Hunian Keluarga"],
+          ["house-3", "Cluster Dua Lantai"],
+          ["neighborhood", "Lingkungan Kawasan Asri"],
+          ["interior", "Interior Ruang Keluarga"],
+        ]),
+        {
+          name: "promoImageFile",
+          label: "Unggah gambar promo (opsional)",
+          type: "file",
+          accept: "image/png,image/webp,image/jpeg",
+          required: false,
+          wide: true,
+          hint: "JPG, PNG, atau WebP · maksimal 2 MB. Kosongkan jika memakai gambar default.",
+        },
+        field("start", "Mulai berlaku", "date"),
         field("end", "Berakhir", "date"),
         field("status", "Status", "select", ["Draf", "Aktif", "Selesai"]),
-        field("description", "Ketentuan", "textarea", [], { wide: true }),
+        field("description", "Deskripsi promo", "textarea", [], { wide: true }),
+        {
+          ...field("terms", "Syarat & ketentuan promo", "textarea", [], { wide: true }),
+          required: false,
+        },
       ],
-      headers: ["Promo", "Proyek", "Periode", "Status"],
-      cells: (p) => [
-        `<strong>${E(p.name)}</strong>`,
-        E(LJ.project(p.project)?.name),
-        `${LJ.date(p.start)} – ${LJ.date(p.end)}`,
-        LJ.badge(p.status),
-      ],
+      headers: ["Promo", "Target", "Potongan", "Metode", "Periode", "Status"],
+      cells: (p) => {
+        const target = p.unit
+          ? LJ.unitLabel(p.unit)
+          : p.project
+            ? E(LJ.project(p.project)?.name)
+            : "Semua properti";
+        const disc =
+          p.discountType === "Nominal"
+            ? LJ.money(p.discountValue, true)
+            : `${Number(p.discountValue || 0)}%`;
+        const expired = p.end && p.end < LJ.today();
+        return [
+          `<strong>${E(p.name)}</strong><small>${E(p.scope || "Proyek")}</small>`,
+          target,
+          `<strong>${E(disc)}</strong>`,
+          `<small>${E(LJ.promoMethods(p).join(", "))}</small>`,
+          `${LJ.date(p.start)} – ${LJ.date(p.end)}${expired && p.status === "Aktif" ? ' <span class="badge red">Kedaluwarsa</span>' : ""}`,
+          LJ.badge(p.status),
+        ];
+      },
     },
     communications: {
       title: "riwayat komunikasi",

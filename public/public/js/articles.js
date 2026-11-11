@@ -24,7 +24,7 @@
             .map((p) => `<p>${E(p)}</p>`)
             .join(
               "",
-            )}</div><div class="u-mt-24"><div class="panel"><h4 class="u-mb-4">${I("message", "sm")} Ingin Konsultasi Pemilihan Unit & Simulasi Cara Bayar?</h4><p class="u-text-11">Property Advisor LinyJaya siap membantu menghitungkan simulasi Cash Keras (Diskon 5%), Cash Bertahap (Bunga 0%), atau KPR Bank secara gratis.</p><div class="u-mt-14 flex gap-10 wrap">${A("Jadwalkan Konsultasi", "kontak", "primary small", "message")}<a href="${LJ.whatsappLink('Halo Tim Sales LinyJaya, saya membaca artikel panduan dan ingin konsultasi skema cara bayar.')}" target="_blank" rel="noopener noreferrer" class="btn whatsapp small">${I("whatsapp")} Chat WhatsApp Sales</a></div></div></div><div class="divider"></div>${A("Kembali ke semua artikel", "artikel", "secondary", "arrow")}</div></article>`
+            )}</div><div class="u-mt-24"><div class="panel"><h4 class="u-mb-4">${I("message", "sm")} Ingin Konsultasi Pemilihan Unit & Simulasi Cara Bayar?</h4><p class="u-text-11">Tim LinyJaya Property siap membantu menghitungkan simulasi Cash Keras, Cash Lunak, atau estimasi KPR sesuai kebutuhan Anda.</p><div class="u-mt-14 flex gap-10 wrap">${A("Buka Simulasi", "simulasi", "primary small", "calculator")}${A("Jadwalkan Konsultasi", "kontak", "secondary small", "message")}<a href="${LJ.whatsappLink('Halo Tim LinyJaya Property, saya membaca artikel panduan dan ingin konsultasi metode pembayaran.')}" target="_blank" rel="noopener noreferrer" class="btn whatsapp small">${I("whatsapp")} Hubungi via WhatsApp</a></div></div></div><div class="divider"></div>${A("Kembali ke semua artikel", "artikel", "secondary", "arrow")}</div></article>`
         : LJ.notFound();
     }
     return content;

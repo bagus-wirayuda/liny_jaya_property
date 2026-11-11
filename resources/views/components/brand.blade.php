@@ -1,6 +1,6 @@
 @props([
     'href' => route('home'),
-    'label' => 'LinyJaya Development',
+    'label' => 'LinyJaya Property',
 ])
 
 <a {{ $attributes->merge(['class' => 'brand', 'href' => $href]) }}>

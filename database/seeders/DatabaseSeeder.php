@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use App\Services\PaymentCalculator;
 use App\Services\PropertyRecords;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -13,6 +14,9 @@ class DatabaseSeeder extends Seeder
     public function run(PropertyRecords $records): void
     {
         DB::transaction(function () use ($records): void {
+            if (! $records->query('settings')->where('id', 'payment_methods')->exists()) {
+                $records->put('settings', 'payment_methods', PaymentCalculator::defaultConfig());
+            }
             if ($records->query('settings')->where('id', 'company')->exists()) {
                 return;
             }

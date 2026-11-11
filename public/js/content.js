@@ -1,34 +1,43 @@
-/* Editorial content and dynamic sales advisories for LinyJaya Development. */
+/* Editorial content and dynamic sales advisories for LinyJaya Property Makassar. */
 (function () {
   LJ.editorial = {
-    status: "Penawaran Resmi & Promo Spesial Berlaku",
+    status: "Informasi Hunian Kota Makassar & Promo Berlaku",
     pricing:
-      "Dapatkan promo cashback, diskon tunai keras hingga 5%, skema cicilan bertahap 0% ke developer, serta KPR DP ringan dengan subsidi biaya. Hubungi Property Advisor kami untuk penawaran terbaik hari ini.",
+      "Bandingkan skema pembayaran Cash Keras, Cash Lunak langsung developer, dan estimasi KPR sesuai kebutuhan keluarga Anda di Kota Makassar.",
     record:
-      "Catatan konsultasi dan pemesanan unit ditangani langsung oleh Tim Sales & Legal LinyJaya.",
+      "Catatan konsultasi dan pemesanan unit dikelola langsung melalui sistem LinyJaya Property.",
     draft:
-      "Simulasi pembayaran resmi LinyJaya Development untuk mempermudah perencanaan kepemilikan rumah impian Anda.",
-    form: "Jadwalkan konsultasi properti dan survei show unit bersama Property Advisor LinyJaya. Layanan konsultasi gratis & fast response.",
+      "Simulasi pembayaran LinyJaya Property bersifat estimasi untuk membantu perencanaan pembelian rumah Anda.",
+    form: "Jadwalkan konsultasi properti atau kunjungan lokasi di Kota Makassar bersama tim pemasaran LinyJaya Property.",
     formResult:
-      "Permohonan konsultasi berhasil dikirim! Tim Sales LinyJaya akan segera menghubungi Anda melalui WhatsApp atau telepon.",
+      "Permohonan konsultasi berhasil dikirim. Tim LinyJaya Property akan menghubungi Anda untuk konfirmasi jadwal.",
     paymentResult:
-      "Catatan pembayaran berhasil diperbarui. Tim keuangan dan legal siap mendampingi proses administrasi Anda.",
+      "Catatan pembayaran berhasil diperbarui. Peninjauan administrasi dilakukan sesuai jadwal dan bukti yang diajukan.",
   };
 
-  LJ.publicationNotice = (projectId) => {
-    const activePromos = (LJ.db?.promos || []).filter(
-      (promo) => !projectId || promo.project === projectId,
-    );
-    const promos = activePromos.length ? activePromos : (LJ.db?.promos || []);
-    if (!promos.length) {
-      return `<div class="publication-note sales-promo-bar">${LJ.icon("spark")}<span><strong>Konsultasi Cara Bayar:</strong> Pilihan Cash Keras, Cash Bertahap, dan KPR Bank tersedia bersama Property Advisor LinyJaya.</span></div>`;
+  LJ.publicationNotice = (projectId, unitId = null) => {
+    const unit = unitId ? LJ.unit(unitId) : null;
+    const activePromos = (LJ.db?.promos || []).filter((promo) => {
+      if (!LJ.isPromoActive(promo)) return false;
+      if (unit) return LJ.promoAppliesToUnit(promo, unit);
+      if (projectId) return !promo.project || promo.project === projectId;
+      return true;
+    });
+    if (!activePromos.length) {
+      return `<div class="publication-note sales-promo-bar">${LJ.icon("spark")}<span><strong>3 Skema Pembayaran Tersedia:</strong> Cash Keras, Cash Lunak, dan estimasi KPR dapat dihitung di <a class="text-link" href="simulasi${unitId ? "?unit=" + encodeURIComponent(unitId) : ""}">halaman Simulasi</a>.</span></div>`;
     }
-    const summary = promos
+    const summary = activePromos
+      .slice(0, 2)
       .map((p) => {
-        const snippet = (p.description || "").split(".")[0]?.trim();
-        return snippet ? `${LJ.esc(p.name)} (${LJ.esc(snippet)})` : LJ.esc(p.name);
+        const badge =
+          Number(p.discountValue) > 0
+            ? p.discountType === "Nominal"
+              ? `potongan ${LJ.money(p.discountValue, true)}`
+              : `potongan ${p.discountValue}%`
+            : "";
+        return badge ? `${LJ.esc(p.name)} (${badge})` : LJ.esc(p.name);
       })
       .join(" · ");
-    return `<div class="publication-note sales-promo-bar">${LJ.icon("spark")}<span><strong>Promo Aktif:</strong> ${summary}. Hubungi tim sales untuk simulasi unit Anda.</span></div>`;
+    return `<div class="publication-note sales-promo-bar">${LJ.icon("spark")}<span><strong>Promo Aktif Makassar:</strong> ${summary}. <a class="text-link" href="promo">Lihat detail promo</a> atau <a class="text-link" href="simulasi${unitId ? "?unit=" + encodeURIComponent(unitId) : ""}">hitung simulasi</a>.</span></div>`;
   };
 })();

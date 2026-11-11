@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\PaymentCalculator;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,11 +11,14 @@ class Promo extends WorkspaceModel
 {
     protected $table = 'promos';
 
-    protected $fillable = ['id', 'project_id', 'payload'];
+    protected $fillable = ['id', 'project_id', 'unit_id', 'payload'];
 
     public static function payloadLinks(): array
     {
-        return ['project' => 'project_id'];
+        return [
+            'project' => 'project_id',
+            'unit' => 'unit_id',
+        ];
     }
 
     /**
@@ -25,9 +29,22 @@ class Promo extends WorkspaceModel
         return $this->belongsTo(Project::class, 'project_id');
     }
 
+    /**
+     * @return BelongsTo<Unit, $this>
+     */
+    public function unit(): BelongsTo
+    {
+        return $this->belongsTo(Unit::class, 'unit_id');
+    }
+
     #[Scope]
     protected function active(Builder $query): Builder
     {
-        return $query->where('payload->status', 'Aktif');
+        $today = now(PaymentCalculator::TIMEZONE)->toDateString();
+
+        return $query
+            ->where('payload->status', 'Aktif')
+            ->where('payload->start', '<=', $today)
+            ->where('payload->end', '>=', $today);
     }
 }

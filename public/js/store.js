@@ -57,6 +57,7 @@
     messages: ["subject", "message"],
     company: ["name", "tagline", "email", "phone", "address", "hours", "vision", "mission", "logoData"],
     settings: ["notifications"],
+    paymentConfig: ["cashKeras", "cashLunak", "kpr"],
     profile: ["name", "email", "phone", "address", "notifications", "currentPassword"],
   };
 
@@ -96,7 +97,14 @@
         for (const id of existing.keys()) changes.push({ resource: group, id: String(id), operation: "delete" });
       } else {
         const fields = edits(group, "update", db[group], baseline[group]);
-        if (Object.keys(fields).length) changes.push({ resource: group, id: group === "profile" ? "self" : group, operation: "update", fields });
+        if (Object.keys(fields).length) {
+          changes.push({
+            resource: group,
+            id: group === "profile" ? "self" : group === "paymentConfig" ? "payment_methods" : group,
+            operation: "update",
+            fields,
+          });
+        }
       }
     }
     if (changes.length) await request(bootstrap.endpoints.update, { revision, workspace: bootstrap.workspace, changes });
@@ -119,7 +127,7 @@
     changes: [{ resource: "leads", id: LJ.uid("LD"), operation: "create", fields }],
   });
   LJ.uid = (prefix) => prefix + "-" + Array.from(crypto.getRandomValues(new Uint8Array(16)), (byte) => byte.toString(16).padStart(2, "0")).join("");
-  LJ.today = () => new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Jakarta" });
+  LJ.today = () => new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Makassar" });
   LJ.project = (id) => db.projects.find((project) => project.id === id);
   LJ.unit = (id) => db.units.find((unit) => unit.id === id);
   LJ.book = (id) => db.bookings.find((booking) => booking.id === id);
@@ -131,7 +139,7 @@
   };
   LJ.clientBookings = () => db.bookings;
   LJ.clientPayments = () => db.payments;
-  LJ.bookUnit = (id, note, method, consent) => LJ.workflow("book", { id, note, method, consent });
+  LJ.bookUnit = (id, note, method, consent, extra = {}) => LJ.workflow("book", { id, note, method, consent, ...extra });
   LJ.cancelBooking = (id) => LJ.workflow("booking-cancel", { id });
   LJ.submitPayment = (id, proof, reference, proofData) => LJ.workflow("payment-submit", { id, proof, reference, proofData });
   LJ.verifyPayment = (id, approved) => LJ.workflow("payment-review", { id, approved });

@@ -1,6 +1,6 @@
 @extends('layouts.auth')
 
-@section('title', 'Buat kata sandi baru · LinyJaya Development')
+@section('title', 'Buat kata sandi baru · LinyJaya Property')
 @section('heading', 'Buat kata sandi baru')
 
 @section('content')

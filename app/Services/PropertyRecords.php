@@ -82,6 +82,7 @@ class PropertyRecords
         'reports' => 'photoData',
         'documents' => 'fileData',
         'settings' => 'logoData',
+        'promos' => 'promoImageData',
     ];
 
     public const ROLES = [
@@ -189,7 +190,7 @@ class PropertyRecords
 
     public function today(): string
     {
-        return now('Asia/Jakarta')->toDateString();
+        return now(PaymentCalculator::TIMEZONE)->toDateString();
     }
 
     public function notify(string $audience, string $title, string $message, ?int $client = null, ?string $employee = null): void
@@ -217,7 +218,7 @@ class PropertyRecords
         }
         $content = base64_decode($parts[2], true);
         $mime = $parts[1];
-        $imageOnly = in_array($group, ['reports', 'settings'], true);
+        $imageOnly = in_array($group, ['reports', 'settings', 'promos'], true);
         if ($content === false || strlen($content) > 2_097_152 || (new \finfo(FILEINFO_MIME_TYPE))->buffer($content) !== $mime || ($imageOnly && ! str_starts_with($mime, 'image/'))) {
             throw ValidationException::withMessages([$field => 'Isi dan jenis lampiran tidak sesuai.']);
         }
