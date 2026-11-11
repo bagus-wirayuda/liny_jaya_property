@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Route;
 
 // Authentication & Password Recovery
 Route::middleware('guest')->group(function (): void {
-    Route::view('/login', 'auth.login')->name('login');
+    Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:8,1')->name('login.submit');
     Route::view('/register', 'auth.register')->name('register');
     Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:5,1')->name('register.submit');

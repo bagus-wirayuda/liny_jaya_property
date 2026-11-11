@@ -305,6 +305,43 @@ class CleanRoutesAndModelsTest extends TestCase
             ->assertJsonValidationErrors('workflow');
     }
 
+    public function test_login_page_shows_qa_quick_fill_buttons_only_in_local_or_testing_when_configured(): void
+    {
+        config(['linyjaya.demo_password' => 'QaTestPassword!99']);
+
+        $this->get('/login')
+            ->assertOk()
+            ->assertSee('data-qa-login', false)
+            ->assertSee('data-qa-email="admin@linyjaya.example"', false)
+            ->assertSee('data-qa-email="maya@example.com"', false)
+            ->assertSee('data-qa-email="rafi@example.com"', false)
+            ->assertSee('data-qa-email="aditya@example.com"', false)
+            ->assertSee('data-qa-password="QaTestPassword!99"', false)
+            ->assertSee('js/auth-qa.js', false);
+
+        config(['linyjaya.demo_password' => null]);
+
+        $this->get('/login')
+            ->assertOk()
+            ->assertDontSee('data-qa-login', false)
+            ->assertDontSee('data-qa-password', false)
+            ->assertDontSee('js/auth-qa.js', false);
+
+        config(['linyjaya.demo_password' => 'QaTestPassword!99']);
+
+        try {
+            $this->app->detectEnvironment(fn (): string => 'production');
+
+            $this->get('/login')
+                ->assertOk()
+                ->assertDontSee('data-qa-login', false)
+                ->assertDontSee('QaTestPassword!99', false)
+                ->assertDontSee('js/auth-qa.js', false);
+        } finally {
+            $this->app->detectEnvironment(fn (): string => 'testing');
+        }
+    }
+
     private function user(string $role): User
     {
         return User::query()->where('role', $role)->orderBy('id')->firstOrFail();

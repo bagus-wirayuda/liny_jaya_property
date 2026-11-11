@@ -21,9 +21,48 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Illuminate\View\View;
 
 class AuthController extends Controller
 {
+    public function showLogin(): View
+    {
+        $qaAccounts = [];
+        $qaPassword = '';
+
+        if (app()->environment('local', 'testing') && filled($seedPassword = config('linyjaya.demo_password'))) {
+            $usersByRole = User::query()
+                ->where('active', true)
+                ->whereNull('archived_at')
+                ->whereIn('role', ['admin', 'client', 'employee', 'director'])
+                ->orderBy('id')
+                ->get(['id', 'name', 'email', 'role'])
+                ->groupBy('role');
+
+            $qaAccounts = collect(['admin', 'client', 'employee', 'director'])
+                ->map(function (string $role) use ($usersByRole): ?array {
+                    $account = $usersByRole->get($role)?->first();
+
+                    return $account ? [
+                        'role' => $role,
+                        'roleLabel' => PropertyRecords::ROLES[$role] ?? $role,
+                        'name' => $account->name,
+                        'email' => $account->email,
+                    ] : null;
+                })
+                ->filter()
+                ->values()
+                ->all();
+
+            $qaPassword = (string) $seedPassword;
+        }
+
+        return view('auth.login', [
+            'qaAccounts' => $qaAccounts,
+            'qaPassword' => $qaPassword,
+        ]);
+    }
+
     public function login(LoginRequest $request): RedirectResponse
     {
         $credentials = $request->validated();
