@@ -120,10 +120,10 @@
       ],
     },
     partners: {
-      title: "mitra",
+      title: "mitra & bank rekanan",
       prefix: "PT",
       fields: [
-        field("name", "Nama mitra"),
+        field("name", "Nama Bank / Mitra"),
         field("category", "Bidang", "select", [
           "Perbankan & pembiayaan",
           "Konstruksi & engineering",
@@ -132,11 +132,42 @@
           "Arsitektur & perencanaan",
         ]),
         field(
-          "logo",
-          "Logo perusahaan",
+          "cooperationType",
+          "Jenis Kerja Sama",
           "select",
           [
-            ["", "Tanpa logo"],
+            "Bank Rekanan KPR",
+            "Bank Syariah Rekanan",
+            "Konstruksi & Kontraktor",
+            "Material & Bangunan",
+            "Arsitektur & Konsultan",
+          ],
+          { required: false },
+        ),
+        field("status", "Status Kerja Sama", "select", ["Aktif", "Nonaktif"], {
+          required: false,
+        }),
+        field("kprRate", "Acuan Bunga KPR (%)", "number", [], {
+          required: false,
+          min: 0,
+          max: 25,
+          step: 0.05,
+          hint: "Khusus bank rekanan KPR, contoh: 4.75",
+        }),
+        field("kprTenorMax", "Maks. Tenor KPR (Thn)", "number", [], {
+          required: false,
+          min: 1,
+          max: 30,
+          step: 1,
+          hint: "Kosongkan bila bukan mitra pembiayaan KPR",
+        }),
+        field(
+          "logo",
+          "Logo perusahaan bawaan",
+          "select",
+          [
+            ["", "Tanpa logo bawaan"],
+            ["assets/partners/bca.svg", "Bank BCA (Bank Central Asia)"],
             ["assets/partners/bsi.svg", "Bank Syariah Indonesia"],
             ["assets/partners/wika.png", "WIKA"],
             ["assets/partners/pp.webp", "PT PP"],
@@ -144,16 +175,28 @@
           ],
           { required: false },
         ),
+        {
+          name: "logoFile",
+          label: "Unggah logo kustom (opsional)",
+          type: "file",
+          accept: "image/png,image/webp,image/jpeg",
+          required: false,
+          wide: true,
+          hint: "JPG, PNG, atau WebP maksimal 2 MB. Kosongkan bila memakai logo bawaan.",
+        },
         field("website", "Situs resmi", "url", [], { required: false }),
-        field("description", "Informasi kemitraan", "textarea", [], {
+        field("description", "Informasi kemitraan & ketentuan", "textarea", [], {
           wide: true,
         }),
       ],
-      headers: ["Mitra", "Bidang", "Informasi"],
+      headers: ["Mitra / Bank", "Kerja Sama", "Acuan KPR", "Status"],
       cells: (p) => [
-        `<strong>${E(p.name)}</strong>`,
-        E(p.category),
-        E(p.description.slice(0, 90)),
+        `<strong>${E(p.name)}</strong><small>${E(p.category)}</small>`,
+        E(p.cooperationType || p.category),
+        p.kprRate !== null && p.kprRate !== undefined && p.kprRate !== ""
+          ? `<strong>${Number(p.kprRate)}%</strong><small>${p.kprTenorMax ? `s.d. ${p.kprTenorMax} thn` : "Fleksibel"}</small>`
+          : `<span class="muted">—</span>`,
+        LJ.badge(p.status || "Aktif"),
       ],
     },
     leads: {

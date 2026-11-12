@@ -505,6 +505,10 @@
       "id": "PT-001",
       "name": "Bank Syariah Indonesia",
       "category": "Perbankan & pembiayaan",
+      "cooperationType": "Bank Syariah Rekanan",
+      "status": "Aktif",
+      "kprRate": 6.5,
+      "kprTenorMax": 20,
       "logo": "assets/partners/bsi.svg",
       "website": "https://www.bankbsi.co.id/",
       "description": "Bank syariah dengan layanan pembiayaan kepemilikan rumah dan solusi perbankan untuk kebutuhan keluarga."
@@ -513,6 +517,10 @@
       "id": "PT-002",
       "name": "Wijaya Karya",
       "category": "Konstruksi & engineering",
+      "cooperationType": "Konstruksi & Kontraktor",
+      "status": "Aktif",
+      "kprRate": null,
+      "kprTenorMax": null,
       "logo": "assets/partners/wika.png",
       "website": "https://www.wika.co.id/",
       "description": "Perusahaan engineering dan konstruksi Indonesia dengan portofolio pekerjaan bangunan serta infrastruktur."
@@ -521,6 +529,10 @@
       "id": "PT-003",
       "name": "PT PP (Persero) Tbk",
       "category": "Konstruksi & investasi",
+      "cooperationType": "Konstruksi & Kontraktor",
+      "status": "Aktif",
+      "kprRate": null,
+      "kprTenorMax": null,
       "logo": "assets/partners/pp.webp",
       "website": "https://www.ptpp.co.id/",
       "description": "Perusahaan konstruksi dan investasi yang mengembangkan kapabilitas pada bangunan, infrastruktur, dan engineering."
@@ -529,9 +541,25 @@
       "id": "PT-004",
       "name": "SIG — Semen Indonesia",
       "category": "Material & solusi bangunan",
+      "cooperationType": "Material & Bangunan",
+      "status": "Aktif",
+      "kprRate": null,
+      "kprTenorMax": null,
       "logo": "assets/partners/sig.png",
       "website": "https://www.sig.id/",
       "description": "Penyedia semen dan solusi bahan bangunan untuk mendukung kebutuhan konstruksi serta pengembangan kawasan."
+    },
+    {
+      "id": "PT-005",
+      "name": "Bank BCA (Bank Central Asia)",
+      "category": "Perbankan & pembiayaan",
+      "cooperationType": "Bank Rekanan KPR",
+      "status": "Aktif",
+      "kprRate": 4.75,
+      "kprTenorMax": 25,
+      "logo": "assets/partners/bca.svg",
+      "website": "https://www.bca.co.id/",
+      "description": "Kerja sama pembiayaan KPR Bank BCA untuk unit LinyJaya Property di Makassar dengan acuan bunga fix promo kompetitif dan tenor hingga 25 tahun. Hasil simulasi tetap bersifat estimasi ilustratif dan bukan persetujuan kredit bank."
     }
   ],
   "articles": [

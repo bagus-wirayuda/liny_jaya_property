@@ -83,6 +83,7 @@ class PropertyRecords
         'documents' => 'fileData',
         'settings' => 'logoData',
         'promos' => 'promoImageData',
+        'partners' => 'logoData',
     ];
 
     public const ROLES = [
@@ -218,7 +219,7 @@ class PropertyRecords
         }
         $content = base64_decode($parts[2], true);
         $mime = $parts[1];
-        $imageOnly = in_array($group, ['reports', 'settings', 'promos'], true);
+        $imageOnly = in_array($group, ['reports', 'settings', 'promos', 'partners'], true);
         if ($content === false || strlen($content) > 2_097_152 || (new \finfo(FILEINFO_MIME_TYPE))->buffer($content) !== $mime || ($imageOnly && ! str_starts_with($mime, 'image/'))) {
             throw ValidationException::withMessages([$field => 'Isi dan jenis lampiran tidak sesuai.']);
         }

@@ -20,6 +20,7 @@ class SimulatePaymentRequest extends FormRequest
             'unit' => ['required', 'string', 'exists:units,id'],
             'method' => ['required', 'string', 'in:Cash Keras,Cash Lunak,Cash Bertahap,KPR,KPR Bank'],
             'promoId' => ['nullable', 'string', 'exists:promos,id'],
+            'presetId' => ['nullable', 'string', 'max:60'],
             'dpPercent' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'tenorMonths' => ['nullable', 'integer', 'min:1', 'max:60'],
             'tenorYears' => ['nullable', 'integer', 'min:1', 'max:30'],

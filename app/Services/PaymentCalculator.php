@@ -24,12 +24,70 @@ class PaymentCalculator
     ];
 
     /**
+     * Default configurable KPR simulation presets including cooperating banks.
+     *
+     * @return list<array{
+     *   id: string,
+     *   name: string,
+     *   partnerId: string,
+     *   bankName: string,
+     *   dpPercent: int,
+     *   tenorYears: int,
+     *   interestRate: float,
+     *   badge: string,
+     *   note: string,
+     *   active: bool
+     * }>
+     */
+    public static function defaultKprPresets(): array
+    {
+        return [
+            [
+                'id' => 'KPR-BCA-FIX',
+                'name' => 'KPR Bank BCA — Fix Promo',
+                'partnerId' => 'PT-005',
+                'bankName' => 'Bank BCA',
+                'dpPercent' => 20,
+                'tenorYears' => 15,
+                'interestRate' => 4.75,
+                'badge' => 'Bank Rekanan',
+                'note' => 'Simulasi bunga fix promo kerja sama Bank BCA selama masa awal kredit.',
+                'active' => true,
+            ],
+            [
+                'id' => 'KPR-DP-RINGAN',
+                'name' => 'KPR DP Ringan 10%',
+                'partnerId' => '',
+                'bankName' => 'Bank Rekanan',
+                'dpPercent' => 10,
+                'tenorYears' => 20,
+                'interestRate' => 7.25,
+                'badge' => 'DP Rendah',
+                'note' => 'Pilihan uang muka ringan 10% dengan tenor panjang agar cicilan lebih terjangkau.',
+                'active' => true,
+            ],
+            [
+                'id' => 'KPR-REGULER',
+                'name' => 'KPR Reguler Fleksibel',
+                'partnerId' => '',
+                'bankName' => 'Bank Umum / Syariah',
+                'dpPercent' => 20,
+                'tenorYears' => 15,
+                'interestRate' => 7.5,
+                'badge' => 'Standar',
+                'note' => 'Acuan simulasi anuitas standar dengan DP 20% dan pilihan tenor fleksibel.',
+                'active' => true,
+            ],
+        ];
+    }
+
+    /**
      * Default configurable payment method rules persisted in workspace_settings.
      *
      * @return array{
      *   cashKeras: array{enabled: bool, label: string, dpPercent: int, settlementDays: int, description: string},
      *   cashLunak: array{enabled: bool, label: string, dpPercent: int, tenorMonths: int, maxTenorMonths: int, interestPercent: float, dueDay: int, description: string},
-     *   kpr: array{enabled: bool, label: string, dpPercent: int, defaultTenorYears: int, minTenorYears: int, maxTenorYears: int, interestRate: float, description: string}
+     *   kpr: array{enabled: bool, label: string, dpPercent: int, defaultTenorYears: int, minTenorYears: int, maxTenorYears: int, interestRate: float, description: string, presets: list<array<string, mixed>>}
      * }
      */
     public static function defaultConfig(): array
@@ -60,9 +118,45 @@ class PaymentCalculator
                 'minTenorYears' => 5,
                 'maxTenorYears' => 25,
                 'interestRate' => 7.5,
-                'description' => 'Pembiayaan pembelian rumah melalui Kredit Pemilikan Rumah (KPR) bank; nilai cicilan bersifat estimasi dan bukan persetujuan kredit bank.',
+                'description' => 'Pembiayaan pembelian rumah melalui Kredit Pemilikan Rumah (KPR) bank rekanan; nilai cicilan bersifat estimasi dan bukan persetujuan kredit bank.',
+                'presets' => self::defaultKprPresets(),
             ],
         ];
+    }
+
+    /**
+     * Normalize KPR preset structures for both stored configuration and Admin updates.
+     *
+     * @param  array<int, mixed>  $presets
+     * @return list<array<string, mixed>>
+     */
+    public static function normalizePresets(array $presets): array
+    {
+        $normalized = [];
+        foreach ($presets as $index => $item) {
+            if (! is_array($item)) {
+                continue;
+            }
+            $name = trim((string) ($item['name'] ?? ''));
+            if ($name === '') {
+                continue;
+            }
+            $id = trim((string) ($item['id'] ?? ''));
+            $normalized[] = [
+                'id' => $id !== '' ? $id : 'KPR-'.($index + 1),
+                'name' => $name,
+                'partnerId' => trim((string) ($item['partnerId'] ?? '')),
+                'bankName' => trim((string) ($item['bankName'] ?? 'Bank Rekanan')) ?: 'Bank Rekanan',
+                'dpPercent' => max(5, min(80, (int) ($item['dpPercent'] ?? 20))),
+                'tenorYears' => max(1, min(30, (int) ($item['tenorYears'] ?? 15))),
+                'interestRate' => round(max(0.0, min(25.0, (float) ($item['interestRate'] ?? 7.5))), 2),
+                'badge' => trim((string) ($item['badge'] ?? '')),
+                'note' => trim((string) ($item['note'] ?? '')),
+                'active' => (bool) ($item['active'] ?? true),
+            ];
+        }
+
+        return $normalized;
     }
 
     /**
@@ -83,17 +177,24 @@ class PaymentCalculator
     }
 
     /**
-     * Merge partial configuration overrides with baseline defaults.
+     * Merge partial configuration overrides with baseline or current configuration.
      *
      * @param  array<string, mixed>  $overrides
+     * @param  array<string, array<string, mixed>>|null  $baseConfig
      * @return array<string, array<string, mixed>>
      */
-    public function mergeConfig(array $overrides): array
+    public function mergeConfig(array $overrides, ?array $baseConfig = null): array
     {
-        $defaults = self::defaultConfig();
+        $defaults = $baseConfig ?? self::defaultConfig();
         foreach ($defaults as $key => $base) {
             if (isset($overrides[$key]) && is_array($overrides[$key])) {
-                $defaults[$key] = [...$base, ...array_intersect_key($overrides[$key], $base)];
+                $merged = [...$base, ...array_intersect_key($overrides[$key], $base)];
+                if ($key === 'kpr') {
+                    $merged['presets'] = array_key_exists('presets', $overrides[$key]) && is_array($overrides[$key]['presets'])
+                        ? self::normalizePresets($overrides[$key]['presets'])
+                        : self::normalizePresets(is_array($base['presets'] ?? null) ? $base['presets'] : self::defaultKprPresets());
+                }
+                $defaults[$key] = $merged;
             }
         }
 
@@ -368,13 +469,24 @@ class PaymentCalculator
      */
     private function simulateKpr(int $netPrice, array $pricing, array $methodConfig, array $overrides): array
     {
+        $presetId = isset($overrides['presetId']) ? (string) $overrides['presetId'] : '';
+        $preset = null;
+        if ($presetId !== '') {
+            foreach ($methodConfig['presets'] ?? [] as $item) {
+                if (($item['id'] ?? '') === $presetId) {
+                    $preset = $item;
+                    break;
+                }
+            }
+        }
+
         $minYears = max(1, (int) ($methodConfig['minTenorYears'] ?? 5));
         $maxYears = max($minYears, (int) ($methodConfig['maxTenorYears'] ?? 25));
-        $dpPercent = (float) ($overrides['dpPercent'] ?? $methodConfig['dpPercent']);
+        $dpPercent = (float) ($overrides['dpPercent'] ?? $preset['dpPercent'] ?? $methodConfig['dpPercent']);
         $dpPercent = max(5.0, min(80.0, $dpPercent));
-        $tenorYears = (int) ($overrides['tenorYears'] ?? $methodConfig['defaultTenorYears']);
+        $tenorYears = (int) ($overrides['tenorYears'] ?? $preset['tenorYears'] ?? $methodConfig['defaultTenorYears']);
         $tenorYears = max($minYears, min($maxYears, $tenorYears));
-        $interestRate = (float) ($overrides['interestRate'] ?? $methodConfig['interestRate']);
+        $interestRate = (float) ($overrides['interestRate'] ?? $preset['interestRate'] ?? $methodConfig['interestRate']);
         $interestRate = max(0.0, min(25.0, $interestRate));
 
         $dpAmount = (int) round($netPrice * ($dpPercent / 100));
@@ -398,6 +510,9 @@ class PaymentCalculator
         return [
             ...$pricing,
             'method' => 'KPR',
+            'presetId' => $preset['id'] ?? null,
+            'presetName' => $preset['name'] ?? null,
+            'bankName' => $preset['bankName'] ?? null,
             'dpPercent' => $dpPercent,
             'dpAmount' => $dpAmount,
             'plafon' => $plafon,

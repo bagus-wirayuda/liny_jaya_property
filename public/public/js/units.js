@@ -261,6 +261,13 @@
           <div class="sales-kpr-highlight">
             <span class="u-text-10">Estimasi Cicilan KPR (${LJ.paymentConfig().kpr.defaultTenorYears} Th):</span>
             <strong>${LJ.money(LJ.calcKPR(displayPrice), true)} <small>/ bulan</small></strong>
+            ${
+              LJ.kprPartners().length
+                ? `<div class="unit-kpr-banks">${LJ.kprPartners()
+                    .map((bp) => `<span>${E(bp.name.replace(/\s*\([^)]*\)/, ""))}</span>`)
+                    .join("")}</div>`
+                : ""
+            }
           </div>
 
           <div class="sales-perks-mini">

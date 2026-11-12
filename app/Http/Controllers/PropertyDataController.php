@@ -6,6 +6,7 @@ use App\Http\Requests\Property\SimulatePaymentRequest;
 use App\Http\Requests\Property\ToggleFavoriteRequest;
 use App\Http\Requests\Property\UpdateChangesRequest;
 use App\Http\Requests\Property\WorkflowActionRequest;
+use App\Models\Partner;
 use App\Models\Promo;
 use App\Models\PropertyAttachment;
 use App\Models\PropertyFavorite;
@@ -136,7 +137,10 @@ class PropertyDataController extends Controller
         $publicPromo = $attachment->resource === 'promos'
             && $attachment->field === 'promoImageData'
             && Promo::query()->active()->where('id', $attachment->record_id)->exists();
-        if (! $publicLogo && ! $publicPromo) {
+        $publicPartnerLogo = $attachment->resource === 'partners'
+            && $attachment->field === 'logoData'
+            && Partner::query()->where('id', $attachment->record_id)->exists();
+        if (! $publicLogo && ! $publicPromo && ! $publicPartnerLogo) {
             $user = $this->activeUser($request);
             abort_unless(
                 $user && ! ($user->role === 'director' && $attachment->resource === 'payments')

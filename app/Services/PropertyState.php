@@ -125,7 +125,7 @@ class PropertyState
         $reads = $viewer ? $viewer->readNotifications()->pluck('property_notifications.id')->flip() : collect();
 
         $files['settings']['company'] = $this->attachments('settings', ['company'])['company'] ?? [];
-        foreach (['payments', 'reports', 'documents', 'promos'] as $group) {
+        foreach (['payments', 'reports', 'documents', 'promos', 'partners'] as $group) {
             if (isset($rows[$group]) && ! ($group === 'payments' && $viewer?->role === 'director')) {
                 $files[$group] = $this->attachments($group, $rows[$group]->pluck('id')->all());
             }

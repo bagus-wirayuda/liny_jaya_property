@@ -17,7 +17,10 @@
       (t === "services"
         ? LJ.manager("services")
         : t === "partners"
-          ? LJ.manager("partners")
+          ? LJ.manager("partners", {
+              title: "Mitra & Kerja Sama Bank KPR",
+              note: "Kelola data kerja sama pembiayaan KPR (termasuk Bank BCA) serta mitra konstruksi dan material. Perubahan otomatis tersinkronisasi dengan Simulasi KPR dan halaman Mitra.",
+            })
           : LJ.panel(
               t === "vision"
                 ? "Visi & misi perusahaan"

@@ -167,38 +167,87 @@
       : "—";
   LJ.image = (name) => "assets/images/" + name +
     (matchMedia("(max-width: 950px)").matches ? "-mobile.webp" : ".jpg");
-  LJ.paymentConfig = () => ({
-    cashKeras: {
-      enabled: true,
-      label: "Cash Keras",
+  const DEFAULT_KPR_PRESETS = [
+    {
+      id: "KPR-BCA-FIX",
+      name: "KPR Bank BCA — Fix Promo",
+      partnerId: "PT-005",
+      bankName: "Bank BCA",
       dpPercent: 20,
-      settlementDays: 14,
-      description: "Pembayaran tunai penuh atau tanda jadi diikuti pelunasan dalam batas waktu kesepakatan developer.",
-      ...(LJ.db?.paymentConfig?.cashKeras || {}),
+      tenorYears: 15,
+      interestRate: 4.75,
+      badge: "Bank Rekanan",
+      note: "Simulasi bunga fix promo kerja sama Bank BCA selama masa awal kredit.",
+      active: true,
     },
-    cashLunak: {
-      enabled: true,
-      label: "Cash Lunak",
-      dpPercent: 20,
-      tenorMonths: 12,
-      maxTenorMonths: 36,
-      interestPercent: 0,
-      dueDay: 10,
-      description: "Pembayaran bertahap langsung ke developer dengan DP dan cicilan bulanan terjadwal.",
-      ...(LJ.db?.paymentConfig?.cashLunak || {}),
+    {
+      id: "KPR-DP-RINGAN",
+      name: "KPR DP Ringan 10%",
+      partnerId: "",
+      bankName: "Bank Rekanan",
+      dpPercent: 10,
+      tenorYears: 20,
+      interestRate: 7.25,
+      badge: "DP Rendah",
+      note: "Pilihan uang muka ringan 10% dengan tenor panjang agar cicilan lebih terjangkau.",
+      active: true,
     },
-    kpr: {
-      enabled: true,
-      label: "KPR",
+    {
+      id: "KPR-REGULER",
+      name: "KPR Reguler Fleksibel",
+      partnerId: "",
+      bankName: "Bank Umum / Syariah",
       dpPercent: 20,
-      defaultTenorYears: 15,
-      minTenorYears: 5,
-      maxTenorYears: 25,
+      tenorYears: 15,
       interestRate: 7.5,
-      description: "Pembiayaan KPR melalui bank; hasil simulasi bersifat estimasi, bukan persetujuan kredit bank.",
-      ...(LJ.db?.paymentConfig?.kpr || {}),
+      badge: "Standar",
+      note: "Acuan simulasi anuitas standar dengan DP 20% dan pilihan tenor fleksibel.",
+      active: true,
     },
-  });
+  ];
+  LJ.paymentConfig = () => {
+    const rawKpr = LJ.db?.paymentConfig?.kpr || {};
+    return {
+      cashKeras: {
+        enabled: true,
+        label: "Cash Keras",
+        dpPercent: 20,
+        settlementDays: 14,
+        description: "Pembayaran tunai penuh atau tanda jadi diikuti pelunasan dalam batas waktu kesepakatan developer.",
+        ...(LJ.db?.paymentConfig?.cashKeras || {}),
+      },
+      cashLunak: {
+        enabled: true,
+        label: "Cash Lunak",
+        dpPercent: 20,
+        tenorMonths: 12,
+        maxTenorMonths: 36,
+        interestPercent: 0,
+        dueDay: 10,
+        description: "Pembayaran bertahap langsung ke developer dengan DP dan cicilan bulanan terjadwal.",
+        ...(LJ.db?.paymentConfig?.cashLunak || {}),
+      },
+      kpr: {
+        enabled: true,
+        label: "KPR",
+        dpPercent: 20,
+        defaultTenorYears: 15,
+        minTenorYears: 5,
+        maxTenorYears: 25,
+        interestRate: 7.5,
+        description: "Pembiayaan KPR melalui bank rekanan; hasil simulasi bersifat estimasi, bukan persetujuan kredit bank.",
+        ...rawKpr,
+        presets: Array.isArray(rawKpr.presets) ? rawKpr.presets : structuredClone(DEFAULT_KPR_PRESETS),
+      },
+    };
+  };
+  LJ.partnerLogo = (p) => p?.logoData || p?.logo || "";
+  LJ.kprPartners = () =>
+    (LJ.db?.partners || []).filter(
+      (p) =>
+        (p.status || "Aktif") === "Aktif" &&
+        (p.category === "Perbankan & pembiayaan" || String(p.cooperationType || "").startsWith("Bank")),
+    );
   LJ.normalizeMethod = (method) => {
     if (method === "Cash Bertahap" || method === "Cash Lunak") return "Cash Lunak";
     if (method === "KPR Bank" || method === "KPR") return "KPR";
@@ -267,6 +316,7 @@
     unit = null,
     method = "KPR",
     promoId = "",
+    presetId = "",
     dpPercent = null,
     tenorMonths = null,
     tenorYears = null,
@@ -361,11 +411,14 @@
     }
 
     const mCfg = cfg.kpr;
+    const preset = presetId
+      ? (mCfg.presets || []).find((item) => item.id === presetId) || null
+      : null;
     const minY = Math.max(1, Number(mCfg.minTenorYears || 5));
     const maxY = Math.max(minY, Number(mCfg.maxTenorYears || 25));
-    const dpPct = Math.max(5, Math.min(80, Number(dpPercent ?? mCfg.dpPercent)));
-    const years = Math.max(minY, Math.min(maxY, Math.round(Number(tenorYears ?? mCfg.defaultTenorYears))));
-    const ratePct = Math.max(0, Number(interestRate ?? mCfg.interestRate ?? 7.5));
+    const dpPct = Math.max(5, Math.min(80, Number(dpPercent ?? preset?.dpPercent ?? mCfg.dpPercent)));
+    const years = Math.max(minY, Math.min(maxY, Math.round(Number(tenorYears ?? preset?.tenorYears ?? mCfg.defaultTenorYears))));
+    const ratePct = Math.max(0, Number(interestRate ?? preset?.interestRate ?? mCfg.interestRate ?? 7.5));
     const dpAmount = Math.round(finalPrice * (dpPct / 100));
     const plafon = Math.max(0, finalPrice - dpAmount);
     const months = years * 12;
@@ -382,6 +435,9 @@
     const totalInstallments = monthlyInstallment * months;
     return {
       method: "KPR",
+      presetId: preset?.id || null,
+      presetName: preset?.name || null,
+      bankName: preset?.bankName || null,
       originalPrice: basePrice,
       discountAmount,
       finalPrice,

@@ -35,7 +35,12 @@ return [
     'partners' => [
         'name' => ['required', 'string', 'max:240'],
         'category' => ['required', 'string', 'max:240', 'in:Perbankan & pembiayaan,Konstruksi & engineering,Konstruksi & investasi,Material & solusi bangunan,Arsitektur & perencanaan'],
+        'cooperationType' => ['nullable', 'string', 'max:120', 'in:Bank Rekanan KPR,Bank Syariah Rekanan,Konstruksi & Kontraktor,Material & Bangunan,Arsitektur & Konsultan'],
+        'status' => ['nullable', 'string', 'in:Aktif,Nonaktif'],
+        'kprRate' => ['nullable', 'numeric', 'min:0', 'max:25'],
+        'kprTenorMax' => ['nullable', 'integer', 'min:1', 'max:30'],
         'logo' => ['nullable', 'string', 'max:240'],
+        'logoData' => ['nullable', 'string', 'max:2800000'],
         'website' => ['nullable', 'string', 'max:500', 'url:http,https'],
         'description' => ['required', 'string', 'max:3000'],
     ],

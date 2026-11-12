@@ -227,6 +227,37 @@
             .filter(Boolean);
           if (!existing) data.tag = data.category;
         }
+        if (key === "partners") {
+          const file = data.logoFile;
+          delete data.logoFile;
+          if (file instanceof File && file.size > 0) {
+            if (!file.type.startsWith("image/"))
+              throw Error("Logo mitra harus berupa berkas JPG, PNG, atau WebP.");
+            data.logoData = await LJ.fileData(file);
+          }
+          data.cooperationType =
+            data.cooperationType ||
+            (data.category === "Perbankan & pembiayaan"
+              ? "Bank Rekanan KPR"
+              : data.category === "Material & solusi bangunan"
+                ? "Material & Bangunan"
+                : data.category === "Arsitektur & perencanaan"
+                  ? "Arsitektur & Konsultan"
+                  : "Konstruksi & Kontraktor");
+          data.status = data.status || "Aktif";
+          data.kprRate =
+            data.kprRate !== undefined && data.kprRate !== "" && data.kprRate !== null
+              ? Math.round(Number(data.kprRate) * 100) / 100
+              : null;
+          data.kprTenorMax =
+            data.kprTenorMax !== undefined && data.kprTenorMax !== "" && data.kprTenorMax !== null
+              ? Math.round(Number(data.kprTenorMax))
+              : null;
+          if (data.kprRate !== null && (!Number.isFinite(data.kprRate) || data.kprRate < 0 || data.kprRate > 25))
+            throw Error("Acuan bunga KPR harus di antara 0% hingga 25%.");
+          if (data.kprTenorMax !== null && (!Number.isFinite(data.kprTenorMax) || data.kprTenorMax < 1 || data.kprTenorMax > 30))
+            throw Error("Maksimal tenor KPR harus di antara 1 hingga 30 tahun.");
+        }
         if (key === "promos") {
           delete data["eligibleMethods[]"];
           const file = data.promoImageFile;
@@ -308,6 +339,78 @@
         );
       },
       existing ? "Simpan perubahan" : "Tambahkan data",
+    );
+  }
+  function kprPresetForm(presetId = null) {
+    const cfg = LJ.paymentConfig();
+    const presets = [...(cfg.kpr.presets || [])];
+    const existing = presetId ? presets.find((p) => p.id === presetId) : null;
+    const bankPartners = LJ.db.partners.filter(
+      (p) => p.category === "Perbankan & pembiayaan" || String(p.cooperationType || "").startsWith("Bank"),
+    );
+    const partnerOptions = [
+      ["", "Umum / Tanpa tautan bank spesifik"],
+      ...bankPartners.map((p) => [p.id, `${p.name} (${p.status || "Aktif"})`]),
+    ];
+    LJ.formModal(
+      existing ? "Edit Program / Skema KPR" : "Tambah Program / Skema KPR",
+      [
+        { name: "name", label: "Nama Skema KPR", placeholder: "Contoh: KPR Bank BCA — Fix 3 Tahun", required: true, wide: true },
+        { name: "partnerId", label: "Bank Rekanan (opsional)", type: "select", options: partnerOptions, required: false },
+        { name: "bankName", label: "Label Bank / Penyalur", placeholder: "Contoh: Bank BCA", required: false },
+        { name: "dpPercent", label: "Default DP (%)", type: "number", min: 5, max: 80, step: 1, required: true },
+        { name: "tenorYears", label: "Default Tenor (Tahun)", type: "number", min: cfg.kpr.minTenorYears || 1, max: cfg.kpr.maxTenorYears || 30, step: 1, required: true },
+        { name: "interestRate", label: "Suku Bunga (% / tahun)", type: "number", min: 0, max: 25, step: 0.05, required: true },
+        { name: "badge", label: "Badge / Tag Singkat", placeholder: "Contoh: Bank Rekanan", required: false },
+        { name: "note", label: "Keterangan Singkat", type: "textarea", required: false, wide: true },
+        { name: "active", label: "Tampilkan skema ini pada kalkulator simulasi KPR publik", type: "checkbox", required: false, wide: true },
+      ],
+      existing
+        ? { ...existing, active: existing.active !== false }
+        : {
+            partnerId: bankPartners.find((p) => p.id === "PT-005")?.id || "",
+            bankName: "",
+            dpPercent: cfg.kpr.dpPercent,
+            tenorYears: cfg.kpr.defaultTenorYears,
+            interestRate: cfg.kpr.interestRate,
+            badge: "Bank Rekanan",
+            note: "",
+            active: true,
+          },
+      async (data) => {
+        const linkedPartner = data.partnerId ? LJ.db.partners.find((p) => p.id === data.partnerId) : null;
+        const dpPercent = Math.round(Number(data.dpPercent));
+        const tenorYears = Math.round(Number(data.tenorYears));
+        const interestRate = Math.round(Number(data.interestRate) * 100) / 100;
+        if (dpPercent < 5 || dpPercent > 80) throw Error("DP KPR harus antara 5% hingga 80%.");
+        if (tenorYears < 1 || tenorYears > 30) throw Error("Tenor KPR harus antara 1 hingga 30 tahun.");
+        if (!Number.isFinite(interestRate) || interestRate < 0 || interestRate > 25) throw Error("Suku bunga harus antara 0% hingga 25%.");
+        const entry = {
+          id: existing?.id || LJ.uid("KPR"),
+          name: String(data.name || "").trim(),
+          partnerId: String(data.partnerId || "").trim(),
+          bankName: String(data.bankName || "").trim() || (linkedPartner ? linkedPartner.name.replace(/\s*\([^)]*\)/, "") : "Bank Rekanan"),
+          dpPercent,
+          tenorYears,
+          interestRate,
+          badge: String(data.badge || "").trim(),
+          note: String(data.note || "").trim(),
+          active: Boolean(data.active),
+        };
+        if (!entry.name) throw Error("Nama skema KPR wajib diisi.");
+        const nextPresets = existing
+          ? presets.map((item) => (item.id === existing.id ? entry : item))
+          : [...presets, entry];
+        LJ.db.paymentConfig = {
+          ...cfg,
+          kpr: {
+            ...cfg.kpr,
+            presets: nextPresets,
+          },
+        };
+        await saveToast(existing ? "Program simulasi KPR diperbarui." : "Program simulasi KPR baru ditambahkan.");
+      },
+      existing ? "Simpan Skema KPR" : "Tambah Skema KPR",
     );
   }
   function entityDelete(key, id) {
@@ -975,6 +1078,36 @@
     "entity-delete": (id) => {
       const [key, recordId] = id.split(":");
       entityDelete(key, recordId);
+    },
+    "kpr-preset-add": () => kprPresetForm(),
+    "kpr-preset-edit": (id) => kprPresetForm(id),
+    "kpr-preset-toggle": async (id) => {
+      const cfg = LJ.paymentConfig();
+      const presets = (cfg.kpr.presets || []).map((item) =>
+        item.id === id ? { ...item, active: item.active === false } : item,
+      );
+      LJ.db.paymentConfig = { ...cfg, kpr: { ...cfg.kpr, presets } };
+      await saveToast("Status skema simulasi KPR diperbarui.");
+      LJ.render();
+    },
+    "kpr-preset-delete": (id) => {
+      const cfg = LJ.paymentConfig();
+      const target = (cfg.kpr.presets || []).find((item) => item.id === id);
+      if (!target) return;
+      LJ.confirm(
+        "Hapus skema simulasi KPR?",
+        `Skema <strong>${E(target.name)}</strong> akan dihapus dari pilihan kalkulator simulasi.`,
+        async () => {
+          LJ.db.paymentConfig = {
+            ...cfg,
+            kpr: {
+              ...cfg.kpr,
+              presets: (cfg.kpr.presets || []).filter((item) => item.id !== id),
+            },
+          };
+          await saveToast("Skema simulasi KPR dihapus.");
+        },
+      );
     },
     "entity-view": (id) => {
       const [key, recordId] = id.split(":"),
@@ -1752,6 +1885,18 @@
       LJ.setSimMethod?.(simMethodBtn.dataset.simMethod);
       return;
     }
+    const simPresetBtn = e.target.closest("[data-sim-preset]");
+    if (simPresetBtn) {
+      e.preventDefault();
+      LJ.setSimPreset?.(simPresetBtn.dataset.simPreset);
+      return;
+    }
+    const simTenorBtn = e.target.closest("[data-sim-tenor]");
+    if (simTenorBtn) {
+      e.preventDefault();
+      LJ.setSimTenor?.(Number(simTenorBtn.dataset.simTenor));
+      return;
+    }
     const tab = e.target.closest("[data-tab], [data-sidebar-tab]");
     if (tab) {
       if (currentRole) {
@@ -1883,6 +2028,7 @@
             maxTenorYears: kprMax,
             interestRate: Number(fe.kpr_interestRate.value),
             description: fe.kpr_description.value.trim(),
+            presets: [...(LJ.paymentConfig().kpr.presets || [])],
           },
         };
         await saveToast("Konfigurasi metode pembayaran diperbarui.");

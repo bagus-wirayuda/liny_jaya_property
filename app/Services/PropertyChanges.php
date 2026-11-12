@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\PropertyAttachment;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -185,6 +186,9 @@ class PropertyChanges
         }
         if ($group === 'promos') {
             $data = $this->normalizePromoData($data, $patch);
+        }
+        if ($group === 'partners') {
+            $data = $this->normalizePartnerData($data, $patch, $id);
         }
         if (in_array($group, ['promos', 'schedules'], true)) {
             $this->assert($data['end'] >= $data['start'], 'Tanggal selesai harus sesudah tanggal mulai.');
@@ -453,7 +457,7 @@ class PropertyChanges
             'cashLunak.interestPercent' => ['required', 'numeric', 'min:0', 'max:30'],
             'cashLunak.dueDay' => ['required', 'integer', 'min:1', 'max:28'],
             'cashLunak.description' => ['required', 'string', 'max:500'],
-            'kpr' => ['required', 'array:enabled,label,dpPercent,defaultTenorYears,minTenorYears,maxTenorYears,interestRate,description'],
+            'kpr' => ['required', 'array:enabled,label,dpPercent,defaultTenorYears,minTenorYears,maxTenorYears,interestRate,description,presets'],
             'kpr.enabled' => ['required', 'boolean'],
             'kpr.label' => ['required', 'string', 'max:60'],
             'kpr.dpPercent' => ['required', 'integer', 'min:5', 'max:80'],
@@ -462,9 +466,26 @@ class PropertyChanges
             'kpr.maxTenorYears' => ['required', 'integer', 'min:1', 'max:30'],
             'kpr.interestRate' => ['required', 'numeric', 'min:0', 'max:25'],
             'kpr.description' => ['required', 'string', 'max:500'],
+            'kpr.presets' => ['nullable', 'array', 'max:20'],
+            'kpr.presets.*' => ['required', 'array:id,name,partnerId,bankName,dpPercent,tenorYears,interestRate,badge,note,active'],
+            'kpr.presets.*.id' => ['required', 'string', 'max:60'],
+            'kpr.presets.*.name' => ['required', 'string', 'max:120'],
+            'kpr.presets.*.partnerId' => ['nullable', 'string', 'max:60'],
+            'kpr.presets.*.bankName' => ['nullable', 'string', 'max:120'],
+            'kpr.presets.*.dpPercent' => ['required', 'integer', 'min:5', 'max:80'],
+            'kpr.presets.*.tenorYears' => ['required', 'integer', 'min:1', 'max:30'],
+            'kpr.presets.*.interestRate' => ['required', 'numeric', 'min:0', 'max:25'],
+            'kpr.presets.*.badge' => ['nullable', 'string', 'max:60'],
+            'kpr.presets.*.note' => ['nullable', 'string', 'max:300'],
+            'kpr.presets.*.active' => ['required', 'boolean'],
         ];
         $validated = $this->validate($fields, $rules, true);
-        $merged = $this->calculator->mergeConfig($validated);
+        if (isset($validated['kpr']['presets']) && is_array($validated['kpr']['presets'])) {
+            foreach ($validated['kpr']['presets'] as $preset) {
+                $this->assert(trim((string) ($preset['name'] ?? '')) !== '', 'Nama program/preset KPR wajib diisi.');
+            }
+        }
+        $merged = $this->calculator->mergeConfig($validated, $this->calculator->config());
 
         $merged['cashKeras']['enabled'] = (bool) $merged['cashKeras']['enabled'];
         $merged['cashKeras']['dpPercent'] = (int) $merged['cashKeras']['dpPercent'];
@@ -555,6 +576,47 @@ class PropertyChanges
             'eligibleMethods' => array_values(array_unique($eligibleMethods)),
             'image' => (string) ($data['image'] ?? 'house-1'),
             'terms' => (string) ($data['terms'] ?? ''),
+        ];
+    }
+
+    /**
+     * Normalize partner cooperation fields and clear stale uploaded logo when switching to a static asset.
+     *
+     * @param  array<string, mixed>  $data
+     * @param  array<string, mixed>  $patch
+     * @return array<string, mixed>
+     */
+    private function normalizePartnerData(array $data, array $patch, string $id): array
+    {
+        if (empty($patch['logoData']) && ! empty($patch['logo']) && str_starts_with((string) $patch['logo'], 'assets/')) {
+            PropertyAttachment::query()
+                ->where('resource', 'partners')
+                ->where('record_id', $id)
+                ->where('field', 'logoData')
+                ->delete();
+        }
+
+        $category = (string) ($data['category'] ?? '');
+        $defaultCoop = match ($category) {
+            'Perbankan & pembiayaan' => 'Bank Rekanan KPR',
+            'Material & solusi bangunan' => 'Material & Bangunan',
+            'Arsitektur & perencanaan' => 'Arsitektur & Konsultan',
+            default => 'Konstruksi & Kontraktor',
+        };
+
+        $kprRate = array_key_exists('kprRate', $data) && $data['kprRate'] !== null && $data['kprRate'] !== ''
+            ? round((float) $data['kprRate'], 2)
+            : null;
+        $kprTenorMax = array_key_exists('kprTenorMax', $data) && $data['kprTenorMax'] !== null && $data['kprTenorMax'] !== ''
+            ? (int) $data['kprTenorMax']
+            : null;
+
+        return [
+            ...$data,
+            'cooperationType' => (string) (($data['cooperationType'] ?? '') !== '' ? $data['cooperationType'] : $defaultCoop),
+            'status' => in_array($data['status'] ?? '', ['Aktif', 'Nonaktif'], true) ? $data['status'] : 'Aktif',
+            'kprRate' => $kprRate,
+            'kprTenorMax' => $kprTenorMax,
         ];
     }
 

@@ -353,6 +353,128 @@ class PaymentSimulationAndPromoTest extends TestCase
         $this->assertSame(612000000, $installments->sum('amount'));
     }
 
+    public function test_bank_bca_cooperation_is_seeded_and_editable_by_admin(): void
+    {
+        $this->assertFileExists(public_path('assets/partners/bca.svg'));
+        $this->get('/mitra')->assertOk()->assertSee('public/js/partners.js', false);
+
+        $snapshot = $this->getJson('/api/property/data')->assertOk();
+        $bca = collect($snapshot->json('data.partners'))->firstWhere('id', 'PT-005');
+
+        $this->assertNotNull($bca);
+        $this->assertSame('Bank BCA (Bank Central Asia)', $bca['name']);
+        $this->assertSame('Bank Rekanan KPR', $bca['cooperationType']);
+        $this->assertSame('Aktif', $bca['status']);
+        $this->assertSame(4.75, $bca['kprRate']);
+        $this->assertSame(25, $bca['kprTenorMax']);
+        $this->assertSame('assets/partners/bca.svg', $bca['logo']);
+
+        $client = $this->user('client');
+        $this->actingAs($client);
+        $this->change('partners', 'PT-005', ['kprRate' => 1.0])->assertForbidden();
+
+        $admin = $this->user('admin');
+        $this->actingAs($admin);
+        $updated = $this->change('partners', 'PT-005', [
+            'cooperationType' => 'Bank Rekanan KPR',
+            'status' => 'Aktif',
+            'kprRate' => 5.25,
+            'kprTenorMax' => 20,
+            'logoData' => self::PNG,
+            'description' => 'Kerja sama KPR Bank BCA Makassar dengan bunga acuan diperbarui Admin.',
+        ])->assertOk();
+
+        $bcaAfter = collect($updated->json('data.partners'))->firstWhere('id', 'PT-005');
+        $this->assertSame(5.25, $bcaAfter['kprRate']);
+        $this->assertSame(20, $bcaAfter['kprTenorMax']);
+        $this->assertStringContainsString('diperbarui Admin', $bcaAfter['description']);
+        $this->assertNotEmpty($bcaAfter['logoData']);
+
+        // Uploaded Bank BCA logo attachment is readable on public website.
+        $this->post('/logout');
+        $logoPath = parse_url($bcaAfter['logoData'], PHP_URL_PATH);
+        $this->get($logoPath)->assertOk();
+    }
+
+    public function test_admin_can_add_edit_delete_kpr_simulation_presets_and_simulate_with_preset(): void
+    {
+        $initial = $this->getJson('/api/property/data')->assertOk();
+        $presets = collect($initial->json('data.paymentConfig.kpr.presets'));
+        $this->assertTrue($presets->contains(fn (array $p): bool => $p['id'] === 'KPR-BCA-FIX' && $p['bankName'] === 'Bank BCA'));
+
+        $bcaSim = $this->postJson('/api/property/simulate', [
+            'unit' => 'U2',
+            'method' => 'KPR',
+            'presetId' => 'KPR-BCA-FIX',
+        ])->assertOk()->json('simulation');
+
+        $this->assertSame('KPR-BCA-FIX', $bcaSim['presetId']);
+        $this->assertSame('KPR Bank BCA — Fix Promo', $bcaSim['presetName']);
+        $this->assertSame(20, (int) $bcaSim['dpPercent']);
+        $this->assertSame(15, $bcaSim['tenorYears']);
+        $this->assertSame(4.75, $bcaSim['interestRate']);
+
+        $admin = $this->user('admin');
+        $this->actingAs($admin);
+
+        $baseKpr = $initial->json('data.paymentConfig.kpr');
+        $addedPresets = [
+            ...$presets->all(),
+            [
+                'id' => 'KPR-BCA-MILENIAL',
+                'name' => 'KPR Bank BCA — Milenial 20 Thn',
+                'partnerId' => 'PT-005',
+                'bankName' => 'Bank BCA',
+                'dpPercent' => 15,
+                'tenorYears' => 20,
+                'interestRate' => 5.5,
+                'badge' => 'Milenial',
+                'note' => 'Pilihan DP 15% tenor panjang.',
+                'active' => true,
+            ],
+        ];
+
+        $afterAdd = $this->change('paymentConfig', 'payment_methods', [
+            'kpr' => [...$baseKpr, 'presets' => $addedPresets],
+        ])->assertOk();
+
+        $afterPresets = collect($afterAdd->json('data.paymentConfig.kpr.presets'));
+        $this->assertCount($presets->count() + 1, $afterPresets);
+        $this->assertNotNull($afterPresets->firstWhere('id', 'KPR-BCA-MILENIAL'));
+
+        // Partial update of sibling method preserves custom KPR presets.
+        $cashKeras = $initial->json('data.paymentConfig.cashKeras');
+        $afterPartial = $this->change('paymentConfig', 'payment_methods', [
+            'cashKeras' => [...$cashKeras, 'settlementDays' => 21],
+        ])->assertOk();
+        $this->assertNotNull(collect($afterPartial->json('data.paymentConfig.kpr.presets'))->firstWhere('id', 'KPR-BCA-MILENIAL'));
+
+        // Public simulation can use newly created KPR preset directly.
+        $customSim = $this->postJson('/api/property/simulate', [
+            'unit' => 'U2',
+            'method' => 'KPR',
+            'presetId' => 'KPR-BCA-MILENIAL',
+        ])->assertOk()->json('simulation');
+
+        $expectedPlafon = (int) round(665000000 * 0.85);
+        $r = 0.055 / 12;
+        $n = 240;
+        $factor = pow(1 + $r, $n);
+        $expectedMonthly = (int) round($expectedPlafon * ($r * $factor) / ($factor - 1));
+
+        $this->assertSame(15, (int) $customSim['dpPercent']);
+        $this->assertSame(20, $customSim['tenorYears']);
+        $this->assertSame(5.5, $customSim['interestRate']);
+        $this->assertSame($expectedMonthly, $customSim['monthlyInstallment']);
+
+        // Admin deletes custom preset cleanly.
+        $remaining = $afterPresets->reject(fn (array $p): bool => $p['id'] === 'KPR-BCA-MILENIAL')->values()->all();
+        $afterDelete = $this->change('paymentConfig', 'payment_methods', [
+            'kpr' => [...$baseKpr, 'presets' => $remaining],
+        ])->assertOk();
+        $this->assertNull(collect($afterDelete->json('data.paymentConfig.kpr.presets'))->firstWhere('id', 'KPR-BCA-MILENIAL'));
+    }
+
     private function user(string $role): User
     {
         return User::query()->where('role', $role)->orderBy('id')->firstOrFail();

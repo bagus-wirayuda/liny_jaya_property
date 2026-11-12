@@ -72,7 +72,11 @@
       if (group === "messages") return ["status", "reply"];
       if (group === "leave" || group === "documents") return ["status"];
     }
-    return operationalFields[group] || LJ.entityConfig?.()[group]?.fields.map((field) => field.name) || [];
+    return [
+      ...(operationalFields[group] || LJ.entityConfig?.()[group]?.fields.map((field) => field.name) || []),
+      ...(group === "promos" ? ["promoImageData"] : []),
+      ...(group === "partners" ? ["logoData"] : []),
+    ];
   }
 
   function edits(group, operation, after, before = {}) {
