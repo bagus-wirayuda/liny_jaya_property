@@ -275,23 +275,23 @@
             <div class="about-image">
               <img loading="lazy" src="${LJ.image("interior")}" alt="Interior terang dengan ruang keluarga yang hangat">
               <div class="image-note">
-                <span class="icon-tile article-feature-icon">${I("leaf")}</span>
-                <strong>Tata Ruang Terukur &<br>Pencahayaan Alami.</strong>
-                <p>Dirancang sesuai kebutuhan hunian keluarga masa kini di Kota Makassar.</p>
+                <span class="icon-tile article-feature-icon">${I("spark")}</span>
+                <strong>Kemudahan Pembelian &<br>Pendampingan Penuh.</strong>
+                <p>Konsultasi gratis, pilihan unit terbaik, dan skema pembayaran terjangkau di Kota Makassar.</p>
               </div>
             </div>
             <div class="about-copy">
-              <span class="eyebrow">${I("building")}TENTANG LINYJAYA PROPERTY</span>
-              <h2>Proses terukur.<br>Informasi terbuka.</h2>
-              <p>LinyJaya Property menghadirkan kawasan perumahan di Kota Makassar dengan perencanaan konstruksi bertahap, simulasi pembayaran yang dapat dihitung mandiri, serta pemantauan administrasi digital untuk klien.</p>
+              <span class="eyebrow">${I("spark")}KEUNGGULAN MEMILIKI HUNIAN LINYJAYA</span>
+              <h2>Miliki Rumah Impian Lebih Mudah & Terencana.</h2>
+              <p>Dapatkan penawaran terbaik untuk hunian keluarga Anda di Kota Makassar. Pilihan skema pembayaran fleksibel, potongan promo langsung, dan kemudahan survey lokasi didampingi tim sales berpengalaman.</p>
               <div class="check-list">
-                <div>${I("check")}Simulasi Cash Keras, Cash Lunak, dan estimasi KPR dalam Rupiah</div>
-                <div>${I("check")}Promo aktif dengan periode berlaku & syarat yang jelas</div>
-                <div>${I("check")}Pendampingan jadwal kunjungan dan administrasi unit</div>
+                <div>${I("check")}<strong>3 Skema Pembayaran:</strong> Cash Keras diskon khusus, Cash Bertahap hingga ${LJ.paymentConfig().cashLunak.maxTenorMonths} bulan, dan KPR Bank Rekanan</div>
+                <div>${I("check")}<strong>Promo Terintegrasi:</strong> Potongan harga dan subsidi langsung terhitung transparan di kalkulator simulasi</div>
+                <div>${I("check")}<strong>Layanan Survey Gratis:</strong> Jadwalkan kunjungan unit langsung ke lokasi tanpa dipungut biaya</div>
               </div>
               <div class="u-mt-20 flex gap-10 wrap">
-                ${A("Hitung Simulasi", "simulasi", "primary", "calculator")}
-                ${B("Jadwalkan Konsultasi", "consult-sales", "", "secondary", "message")}
+                ${A("Hitung Simulasi Angsuran", "simulasi", "primary", "calculator")}
+                <a href="${LJ.whatsappLink('Halo Tim Marketing LinyJaya Property, saya ingin konsultasi mengenai unit dan promo yang tersedia.')}" target="_blank" rel="noopener noreferrer" class="btn secondary">${I("whatsapp")} Konsultasi Sales WhatsApp</a>
               </div>
             </div>
           </div>

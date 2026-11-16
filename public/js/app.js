@@ -642,7 +642,7 @@
     "brand-story": () =>
       LJ.modal(
         "Selamat datang di LinyJaya.",
-        `<img src="${LJ.image("interior")}" alt="Ruang keluarga yang nyaman" class="brand-story-image"><h3>Lebih dari alamat. Tempat untuk bertumbuh.</h3><p class="u-mt-14">Jelajahi kawasan yang terencana, temukan tipe hunian yang sesuai, dan kenali setiap detail sebelum menentukan pilihan. Kami hadir untuk mendampingi langkah Anda menuju rumah.</p><div class="modal-footer">${A("Kenali kami lebih dekat", "tentang", "primary", "arrow")}</div>`,
+        `<img src="${LJ.image("interior")}" alt="Ruang keluarga yang nyaman" class="brand-story-image"><h3>Lebih dari alamat. Tempat untuk bertumbuh.</h3><p class="u-mt-14">Jelajahi kawasan yang terencana, temukan tipe hunian yang sesuai, dan kenali setiap detail sebelum menentukan pilihan. Kami hadir untuk mendampingi langkah Anda menuju rumah.</p><div class="modal-footer">${A("Lihat Pilihan Properti", "properti", "primary", "arrow")}</div>`,
       ),
     favorite: async (id, el) => {
       const index = LJ.db.favorites.indexOf(id);

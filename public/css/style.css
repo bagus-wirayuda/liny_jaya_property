@@ -5947,17 +5947,17 @@ body.modal-open {
     display: none;
   }
   .site-nav .nav-inner {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.88) 0%, rgba(242, 248, 255, 0.74) 100%);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.92) 0%, rgba(242, 248, 255, 0.82) 100%);
     backdrop-filter: blur(28px) saturate(165%);
     -webkit-backdrop-filter: blur(28px) saturate(165%);
     border: 1.5px solid rgba(255, 255, 255, 0.95);
     border-radius: 9999px;
-    padding: 6px 14px 6px 20px;
-    height: 64px;
+    padding: 8px 18px 8px 24px;
+    height: 66px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 8px;
+    gap: 16px;
     max-width: 1256px;
     width: 100%;
     margin-inline: auto;
@@ -5970,7 +5970,7 @@ body.modal-open {
   .site-nav .nav-links {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 8px;
     flex: 1 1 auto;
     justify-content: center;
     min-width: 0;
@@ -5979,27 +5979,23 @@ body.modal-open {
     flex-shrink: 0;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     margin-left: auto;
   }
   .site-nav .nav-actions .btn.primary {
     white-space: nowrap !important;
     flex-shrink: 0 !important;
-  }
-}
-
-/* Sembunyikan item opsional pada layar laptop (<= 1360px) agar navbar tidak meluap atau terpotong */
-@media (min-width: 951px) and (max-width: 1360px) {
-  .site-nav .nav-links .optional {
-    display: none !important;
+    padding: 10px 20px !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
   }
 }
 
 .nav-links a {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   color: #475569;
-  padding: 7px 11px;
+  padding: 8px 16px;
   border-radius: 9999px;
   border: 1px solid transparent;
   white-space: nowrap !important;
