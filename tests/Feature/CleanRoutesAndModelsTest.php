@@ -342,6 +342,39 @@ class CleanRoutesAndModelsTest extends TestCase
         }
     }
 
+    public function test_no_public_directory_collides_with_web_routes_and_all_role_pages_resolve(): void
+    {
+        $pages = config('linyjaya_pages');
+
+        foreach ($pages as $page) {
+            $uri = trim((string) ($page['uri'] ?? ''), '/');
+            if ($uri !== '') {
+                $this->assertFalse(
+                    is_dir(public_path($uri)),
+                    "Public directory [{$uri}] must not shadow web route /{$uri}.",
+                );
+            }
+
+            foreach ($page['scripts'] ?? [] as $script) {
+                $this->assertFileExists(public_path($script));
+            }
+        }
+
+        foreach ([
+            'admin' => ['/admin', '/admin/projects', '/admin/settings'],
+            'client' => ['/client', '/client/bookings', '/client/payments'],
+            'employee' => ['/karyawan', '/karyawan/tasks', '/karyawan/reports'],
+            'director' => ['/pimpinan', '/pimpinan/approvals', '/pimpinan/analytics'],
+        ] as $role => $paths) {
+            $this->actingAs($this->user($role));
+            foreach ($paths as $path) {
+                $this->get($path)
+                    ->assertOk()
+                    ->assertSee('modules/', false);
+            }
+        }
+    }
+
     private function user(string $role): User
     {
         return User::query()->where('role', $role)->orderBy('id')->firstOrFail();
