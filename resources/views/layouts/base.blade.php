@@ -10,7 +10,7 @@
     <base href="{{ request()->root() ?: url('/') }}/">
     <title>@yield('title', $page['title'] ?? 'LinyJaya Property')</title>
     <link rel="icon" type="image/svg+xml" href="{{ asset('assets/brand/favicon.svg') }}">
-    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}?v={{ @filemtime(public_path('css/style.css')) ?: '1' }}">
     @stack('head')
 </head>
 <body @yield('body_attributes')>

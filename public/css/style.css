@@ -12104,10 +12104,19 @@ html, body {
     display: flex !important;
     align-items: center !important;
     justify-content: space-between !important;
-    gap: 16px !important;
+    gap: clamp(8px, 1.2vw, 16px) !important;
     box-sizing: border-box !important;
     max-width: 1256px !important;
-    width: 100% !important;
+    width: calc(100% - 32px) !important;
+    margin-inline: auto !important;
+  }
+  .site-nav .nav-links {
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    scrollbar-width: none !important;
+  }
+  .site-nav .nav-links::-webkit-scrollbar {
+    display: none !important;
   }
   .grid.three,
   :root body .grid.three {

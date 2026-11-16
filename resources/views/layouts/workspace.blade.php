@@ -3,7 +3,7 @@
 @push('head')
     <script nonce="{{ $nonce }}">window.LJ = { bootstrap: {{ Illuminate\Support\Js::from($bootstrap) }} };</script>
     @foreach ($page['scripts'] as $script)
-        <script defer src="{{ asset($script) }}"></script>
+        <script defer src="{{ asset($script) }}?v={{ @filemtime(public_path($script)) ?: '1' }}"></script>
     @endforeach
 @endpush
 
