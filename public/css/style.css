@@ -12054,3 +12054,391 @@ body[data-theme="dark"],
 [data-theme="dark"] .sim-unit-price-box {
   border-color: rgba(148, 163, 184, 0.16);
 }
+
+/* ════════════════════════════════════════════════════════════════════════════
+   27 · Mobile App UI/UX Design System & Desktop Hosting Layout Stabilization
+   ════════════════════════════════════════════════════════════════════════════ */
+
+/* Global Viewport & Text Wrapping Stability (All Viewports) */
+html, body {
+  overflow-x: hidden !important;
+  max-width: 100vw !important;
+  width: 100% !important;
+}
+
+.card-price strong,
+.card-price p,
+.promo-discount-badge,
+.pay-feature-header strong,
+.kpi-value,
+.sim-highlight-amount {
+  white-space: nowrap !important;
+}
+
+/* Desktop Stabilization (min-width: 951px) */
+@media (min-width: 951px) {
+  .menu-toggle,
+  .site-nav .menu-toggle,
+  :root body .menu-toggle {
+    display: none !important;
+  }
+  .nav-links,
+  .site-nav .nav-links,
+  :root body .nav-links {
+    display: flex !important;
+    position: static !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    visibility: visible !important;
+    inset: auto !important;
+    max-height: none !important;
+  }
+  .nav-links a {
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+  }
+  .site-nav .nav-inner {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 16px !important;
+    box-sizing: border-box !important;
+    max-width: 1256px !important;
+    width: 100% !important;
+  }
+  .grid.three,
+  :root body .grid.three {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+  .mobile-tabbar {
+    display: none !important;
+  }
+}
+
+/* Mobile App Clean Experience (max-width: 950px) */
+@media (max-width: 950px) {
+  :root body .container {
+    width: min(calc(100% - 24px), 100%) !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Clean Hero Section without laggy decorative clutter */
+  :root body .hero--architecture {
+    min-height: auto !important;
+    padding-block: 16px 36px !important;
+    background: linear-gradient(180deg, #f0f6ff 0%, #e8f1fc 100%) !important;
+  }
+  [data-theme="dark"] body .hero--architecture {
+    background: linear-gradient(180deg, #0d1a2d 0%, #091220 100%) !important;
+  }
+  :root body .hero-backdrop,
+  :root body .glass-wave--top,
+  :root body .glass-wave--mid,
+  :root body .glass-wave--glow,
+  :root body .glass-leaf-bokeh {
+    display: none !important;
+  }
+  :root body .architecture-layout {
+    display: flex !important;
+    flex-direction: column !important;
+    padding-block: 12px 28px !important;
+    gap: 16px !important;
+  }
+  :root body .hero--architecture .hero-copy {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+  :root body .hero--architecture h1 {
+    font-size: clamp(24px, 6.8vw, 32px) !important;
+    line-height: 1.22 !important;
+    margin: 12px 0 10px !important;
+    letter-spacing: -0.03em !important;
+  }
+  :root body .hero--architecture .hero-copy > p {
+    font-size: 13.5px !important;
+    line-height: 1.6 !important;
+    color: #475569 !important;
+    max-width: 100% !important;
+    margin-bottom: 16px !important;
+  }
+  :root body .hero-value-props {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    margin-bottom: 18px !important;
+    width: 100% !important;
+  }
+  :root body .hero-value-pill {
+    background: rgba(255, 255, 255, 0.88) !important;
+    border: 1px solid rgba(24, 87, 232, 0.12) !important;
+    border-radius: 12px !important;
+    padding: 8px 12px !important;
+    font-size: 11.5px !important;
+    line-height: 1.35 !important;
+    flex: 1 1 calc(50% - 8px) !important;
+    min-width: 135px !important;
+    box-sizing: border-box !important;
+  }
+  [data-theme="dark"] body .hero-value-pill {
+    background: rgba(20, 34, 56, 0.88) !important;
+    border-color: rgba(96, 165, 250, 0.18) !important;
+    color: #cbd5e1 !important;
+  }
+  :root body .hero-actions {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 10px !important;
+    width: 100% !important;
+  }
+  :root body .hero-actions .btn {
+    width: 100% !important;
+    min-height: 48px !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    border-radius: 14px !important;
+    justify-content: center !important;
+  }
+  :root body .hero-proof {
+    margin-top: 14px !important;
+    font-size: 12px !important;
+    gap: 10px !important;
+  }
+
+  /* Single Column Mobile Search Form (Zero Overflow) */
+  :root body .search-wrap {
+    margin-top: -20px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  :root body .search-panel {
+    padding: 16px !important;
+    border-radius: 20px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  :root body .search-tabs {
+    display: flex !important;
+    gap: 8px !important;
+    overflow-x: auto !important;
+    max-width: 100% !important;
+    scrollbar-width: none !important;
+    margin-bottom: 12px !important;
+    padding-bottom: 2px !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  :root body .search-tabs::-webkit-scrollbar {
+    display: none !important;
+  }
+  :root body .search-tab {
+    flex-shrink: 0 !important;
+    padding: 9px 14px !important;
+    font-size: 13px !important;
+    min-height: 44px !important;
+    border-radius: 12px !important;
+  }
+  :root body .search-fields {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 10px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  :root body .search-field {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    padding: 10px 14px !important;
+    border-radius: 14px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+  }
+  :root body .search-field > div {
+    min-width: 0 !important;
+    flex: 1 1 auto !important;
+    overflow: hidden !important;
+  }
+  :root body .search-field label {
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    display: block !important;
+  }
+  :root body .search-field select {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    font-size: 14px !important;
+    text-overflow: ellipsis !important;
+    box-sizing: border-box !important;
+    background: transparent !important;
+    border: none !important;
+    padding: 2px 0 !important;
+  }
+  :root body .search-fields > .btn.primary {
+    width: 100% !important;
+    min-height: 48px !important;
+    grid-column: 1 / -1 !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    border-radius: 14px !important;
+    padding: 12px 20px !important;
+  }
+
+  /* Single Column Card Stacking on Mobile */
+  :root body :is(.grid.three, .grid.two, .grid.four, .split-section) {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 14px !important;
+    width: 100% !important;
+  }
+  :root body .benefits {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+    padding-top: 18px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  :root body .benefit {
+    padding: 12px !important;
+    border-radius: 14px !important;
+    background: rgba(255, 255, 255, 0.88) !important;
+    gap: 8px !important;
+    box-sizing: border-box !important;
+  }
+  [data-theme="dark"] body .benefit {
+    background: rgba(20, 34, 56, 0.88) !important;
+    color: #cbd5e1 !important;
+  }
+  :root body .benefit strong {
+    font-size: 13px !important;
+  }
+  :root body .benefit p {
+    font-size: 11.5px !important;
+    max-width: 100% !important;
+  }
+  :root body .stats-strip {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 14px 10px !important;
+    padding: 18px 14px !important;
+    border-radius: 18px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  :root body .stats-strip > div + div {
+    border-left: none !important;
+  }
+  :root body .stats-strip strong {
+    font-size: 26px !important;
+  }
+  :root body .stats-strip p {
+    font-size: 12px !important;
+  }
+  :root body .card-price {
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+  }
+  :root body .card-price strong {
+    white-space: nowrap !important;
+    font-size: 18px !important;
+  }
+
+  /* Compact Mobile Topbar & Hidden Crammed Button */
+  :root body .site-nav {
+    height: 60px !important;
+    padding: 0 !important;
+  }
+  :root body .site-nav .nav-inner {
+    height: 52px !important;
+    padding: 0 12px !important;
+    border-radius: 14px !important;
+  }
+  :root body .site-nav .nav-actions > .btn.primary {
+    display: none !important;
+  }
+
+  /* Single Column Footer */
+  :root body .footer-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 22px !important;
+  }
+  :root body .site-footer {
+    padding-bottom: 24px !important;
+  }
+  :root body .footer-bottom {
+    flex-direction: column !important;
+    gap: 10px !important;
+    text-align: center !important;
+  }
+  :root body .footer-legal {
+    justify-content: center !important;
+    gap: 14px !important;
+  }
+
+  /* Native Mobile App Bottom Tabbar */
+  .mobile-tabbar {
+    display: flex !important;
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    height: calc(58px + env(safe-area-inset-bottom, 0px)) !important;
+    padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+    background: rgba(255, 255, 255, 0.96) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border-top: 1px solid rgba(220, 230, 245, 0.95) !important;
+    z-index: 9999 !important;
+    align-items: center !important;
+    justify-content: space-around !important;
+    box-shadow: 0 -4px 18px rgba(18, 55, 120, 0.08) !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+  }
+  [data-theme="dark"] .mobile-tabbar {
+    background: rgba(14, 25, 44, 0.96) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.35) !important;
+  }
+  .tabbar-item {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 2px !important;
+    flex: 1 1 0 !important;
+    height: 100% !important;
+    min-height: 48px !important;
+    color: #64748b !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    transition: color 0.15s ease !important;
+    -webkit-tap-highlight-color: transparent !important;
+  }
+  .tabbar-item .icon,
+  .tabbar-item .tabbar-icon .icon {
+    width: 20px !important;
+    height: 20px !important;
+  }
+  .tabbar-item.active {
+    color: #1857e8 !important;
+    font-weight: 700 !important;
+  }
+  [data-theme="dark"] .tabbar-item.active {
+    color: #60a5fa !important;
+  }
+  body {
+    padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+}
+
